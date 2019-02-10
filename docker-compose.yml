@@ -1,0 +1,58 @@
+version: "2.0"
+services:
+
+  mariadb:
+    image: mariadb:10.2
+    container_name: HoHo-Mysql
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=littlepighoho17**
+
+  pma:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: HoHo-pma
+    ports: 
+      - "5840:80"
+    depends_on:
+      - mariadb
+    links:
+      - mariadb:db
+
+  redis:
+    image: redis:4.0
+    container_name: HoHo-redis
+    volumes:
+      - ./redis:/data
+      - ./redis/redis.conf:/etc/redis/redis.conf
+    command: redis-server /etc/redis/redis.conf
+
+  server:
+    build: ./image
+    container_name: HoHo-Server
+    restart: always
+    depends_on: 
+      - mariadb
+      - redis
+    links:
+      - mariadb:mysqldb
+      - redis:redis
+    volumes: 
+      - .:/root
+
+  web:
+    image: nginx:1.13
+    container_name: HoHo-Web
+    depends_on: 
+      - server
+      - pma
+    links:
+      - server:server
+      - pma:pma
+    ports: 
+      - "80:80"
+      - "443:443"
+    volumes: 
+      - ./nginx:/etc/nginx/conf.d
+    

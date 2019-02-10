@@ -1,0 +1,9 @@
+mysql
+__pycache__
+.idea
+.DS_Store
+.vscode
+*.pyc
+*.log
+*.egg-info
+!/redis/redis.conf

@@ -1,0 +1,54 @@
+debug: true
+
+allow_hosts:
+  - '*'
+
+databases:
+  server:
+      ENGINE: 'django.db.backends.mysql'
+      NAME: 'hoho'
+      USER: 'root'
+      PASSWORD: 'littlepighoho17**'
+      HOST: 'mysqldb'
+      PORT: 3306
+      CHARSET: 'utf8mb4'
+      COLLATION: 'utf8mb4_general_ci'
+      CONN_MAX_AGE: 600
+
+#celeryd:
+#  TASK_TIME_LIMIT: 120
+#  CONCURRENCY: 20
+#  PREFETCH_MULTIPLIER: 2
+#  MAX_TASKS_PER_CHILD: 200
+#  FORCE_EXECV: true
+#
+#celery:
+#  BROKER_URL: 'amqp://wejudge:12345678@rabbitmq:5672/wejudge'
+#  TASK_RESULT_EXPIRES: 300
+#  RESULT_BACKEND: 'amqp'
+#  ACCEPT_CONTENT:
+#    - 'application/json'
+#  TASK_SERIALIZER: 'json'
+#  RESULT_SERIALIZER: 'json'
+#  TIMEZONE: 'Asia/Shanghai'
+#  raven_dsn: 'https://f63e473aca904afda2febe258bb04e43@sentry.wejudge.net/3'
+
+redis:
+  host: 'redis'
+  port: 6379
+  password: '12345678'
+  
+#secerts:
+#  HMAC_SALT: '2565ebcbfe867bacca4f77b72d63c5dbd0d8316bbb5bb7fc996c57568d8b654f'
+#  ACCOUNT_PASSWORD_SALT: '0A888E506D66D170E6DE7E2B'
+#
+#  vaptcha:
+#    id: '5ba4baf2fc650e8ed0de1467'
+#    secretkey: '921b796a0a0343c4bdb5e771aafdfcaf'
+#
+#  mail_server:
+#    server: 'smtp.qq.com'
+#    port: 465
+#
+#  mails:
+#    - 'noreply2@wejudge.cn::rtugjyvrurapcagi'

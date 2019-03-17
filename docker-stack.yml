@@ -1,0 +1,117 @@
+version: "3.2"
+services: 
+
+  mariadb:
+    image: hoho-mysql
+    # 网络设置
+    networks:
+      server-net:
+        aliases:
+          - mysqldb
+      db-net:
+        # 别名 
+        aliases:
+          - db
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=littlepighoho17**
+    deploy:
+      placement:
+        constraints:
+          - node.labels.id == 1
+
+  pma:
+    image: phpmyadmin/phpmyadmin:latest
+    # 网络设置
+    networks:
+      - db-net
+      - web-net
+    ports: 
+      - "5840:80"
+    depends_on:
+      - mariadb
+    deploy:
+      placement:
+        constraints:
+          - node.labels.id == 2
+
+  redis:
+    image: hoho-redis
+    volumes:
+      - ./redis:/data
+    networks:
+      - server-net
+    deploy:
+      mode: replicated
+      replicas: 2
+
+  server:
+    image: hoho-server
+    restart: always
+    networks:
+      server-net:
+      web-net:
+        aliases:
+          - server
+    depends_on: 
+      - mariadb
+      - redis
+    volumes: 
+      - .:/root
+    deploy:
+      placement:
+        constraints:
+          - node.labels.grade == 2
+
+  web:
+    image: hoho-web
+    networks:
+      - web-net
+    depends_on: 
+      - server
+      - pma
+    ports: 
+      - "80:80"
+      - "443:443"
+    deploy:
+      mode: replicated
+      replicas: 3
+
+  swarm:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "5814:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  web-net:
+  db-net:
+  server-net:
+# volumes:
+#   mysql-db:
+#     driver: local
+#     driver_opts:
+#       type: "nfs"
+#       o: "addr: 39.108.229.132,rw"
+#       device: /hoho/mysql
+#   redis-db:
+#     driver: local
+#     driver_opts:
+#       type: "nfs"
+#       o: "addr: 39.108.229.132,rw"
+#       device: /hoho/redis
+#   server-db:
+#     driver: local
+#     driver_opts:
+#       type: "nfs"
+#       o: "addr: 39.108.229.132,rw"
+#       device: /hoho
+
+  

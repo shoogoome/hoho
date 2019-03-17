@@ -44,10 +44,10 @@ class AssociationLogic(object):
         :param aid:
         :return:
         """
-        association = Association.objects.filter(id=aid, school=self.school)
-        if association.exists():
-            return association[0]
-        raise AssociationExcept.association_not_found()
+        association = Association.objects.get_once(id=aid)
+        if association is None:
+            raise AssociationExcept.association_not_found()
+        return association
 
     def get_association_account(self):
         """
@@ -85,9 +85,7 @@ class AssociationLogic(object):
             # 过滤time参数
             if len(re.findall('time', key)) <= 0:
                 raise CurriculumExcept.format_error()
-        
-    
-    
+
     @staticmethod
     def elective_code():
         """

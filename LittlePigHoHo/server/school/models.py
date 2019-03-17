@@ -2,6 +2,7 @@
 # coding:utf-8
 
 from django.db import models
+from common.core.dao.cache.model_manager import HoHoModelManager
 
 
 # 学校表
@@ -26,6 +27,9 @@ class School(models.Model):
 
     # 学校配置信息(用户可以改动的部分)
     config = models.TextField(default='{}')
+
+    # 重构管理器
+    objects = HoHoModelManager()
 
     def __str__(self):
         return "[%s] %s(%s)" % (self.id, self.name, self.short_name)

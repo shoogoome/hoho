@@ -120,3 +120,56 @@ python3 manage.py createsuperuser
 ls
 python3 -m manage createsuperuser
 exit
+ls
+cd homepage
+ls
+cd ..
+ls
+cp homepage /root/LittlePigHoHo/server
+cp -r homepage /root/LittlePigHoHo/server
+ls
+ls
+mysql -u mysqldb -p
+apt-get install mysql
+apt-get install mysql-server
+apt-get install mysql-server
+apt-get update
+apt-get install mysql-server
+mysql -u mysqldb -p
+mysql -u mysqldb -p
+mysql -u mysqldb -p
+apt-get install -y mysql-client
+mysql -umysqldb -p
+exit
+mysql -h mysqldb -p
+mysql -h mysqldb -u root -p
+ping mysqldb
+apt-get install ping
+apt-get install pingus
+telinit 
+telinit --help
+apt-get install iputils-ping
+ping mysqldb
+mysql -h mysqldb -u root 
+mysql -h mysqldb -u root -p littlepighoho17**
+mysql -h mysqldb -u root -p
+ls
+echo 'littlepighoho17**' | mysqldump -h mysqldb -u root -p hoho > mysql.sql
+ls
+echo 'littlepighoho17**'
+echo littlepighoho17**
+echo littlepighoho17** | mysqldump -h mysqldb -u root -p hoho > mysql2.sql
+echo littlepighoho17** | mysqldump -h mysqldb -u root -plittlepighoho17** hoho > mysql2.sql
+ls
+rm -rf mysql.sql mysql2.sql 
+ls
+mysqldump -h mysqldb -u root -plittlepighoho17** hoho > mysql.sql
+ls
+rm -rf mysql.sql
+exit
+exit
+pip3 install apscheduler
+pip3
+pip3 install request
+pip3 --help
+exit

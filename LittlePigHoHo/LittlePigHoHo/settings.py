@@ -16,7 +16,6 @@ import pymysql
 env_dict = os.environ
 __conf_yaml_file = env_dict.get('Ho_CONFIG', '/root/LittlePigHoHo/LittlePigHoHo/config.yml')
 assert os.path.exists(__conf_yaml_file), 'Not this path'
-# __conf_yaml_file = 'LittlePigHoHo/config.yml'
 fp = open(__conf_yaml_file, 'r')
 __ho_config = yaml.load(fp.read())
 fp.close()
@@ -60,21 +59,29 @@ DATABASES = {
 # ##################
 __config_redis = __ho_config.get('redis', {})
 
-
-
 REDIS_CONFIG_HOST = __config_redis.get('host', '127.0.0.1')
 REDIS_CONFIG_PASSWORD = __config_redis.get('password', '')
 REDIS_CONFIG_PORT = __config_redis.get('port', 6379)
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": ['redis://:{0}@{1}:{2}/2'.format(
-                __config_redis.get('password', ''),
-                __config_redis.get('host', '127.0.0.1'),
-                __config_redis.get('port', 6379)
-            )],
+# ##################
+#      Cache
+# ##################
+
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': '{0}:{1}'.format(
+            __config_redis.get('host', '127.0.0.1'),
+            __config_redis.get('port', 6379)
+        ),
+        'OPTIONS': {
+            'DB': 2,
+            'PASSWORD': __config_redis.get('password', ''),
+            'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
+            'CONNECTION_POOL_CLASS_KWARGS': {
+                'max_connections': 100,
+                'timeout': 10,
+            },
         },
     },
 }
@@ -97,6 +104,7 @@ INSTALLED_APPS = [
     'server.interview',
     'server.repository',
     'server.task',
+    'server.homepage',
 ]
 
 MIDDLEWARE = [

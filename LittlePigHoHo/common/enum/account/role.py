@@ -16,6 +16,5 @@ class RoleEnum(EnumBase):
         'DIRECTOR': '干事',
         'MINISTER': '部长',
         'PRESIDENT': '会长',
-        'TEACHER': '老师',
         'ADMIN': '系统管理员',
     }

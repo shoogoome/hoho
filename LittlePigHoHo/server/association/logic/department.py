@@ -50,10 +50,9 @@ class DepartmentLogic(object):
         :param did:
         :return:
         """
-        departments = AssociationDepartment.objects.filter(id=did)
-
-        if departments.exists():
-            return departments[0]
+        departments = AssociationDepartment.objects.get_once(id=did)
+        if departments is not None:
+            return departments
         raise DepartmentExcept.department_not_found()
 
     def check(self, *permission):

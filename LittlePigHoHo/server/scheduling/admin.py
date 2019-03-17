@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Curriculum, AccountCurriculum
+from .models import AssociationAccountCurriculum, AssociationCurriculum, AssociationScheduling
 # Register your models here.
 
-admin.site.register(Curriculum)
-admin.site.register(AccountCurriculum)
+admin.site.register(AssociationAccountCurriculum)
+admin.site.register(AssociationCurriculum)
+admin.site.register(AssociationScheduling)

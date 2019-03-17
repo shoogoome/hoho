@@ -24,12 +24,10 @@ class SchoolLogic(object):
         :param thown:
         :return:
         """
-        schools = School.objects.filter(id=sid)
-        if schools.exists():
-            return schools[0]
-        if thown:
+        schools = School.objects.get_once(id=sid)
+        if schools is None and thown:
             raise SchoolInfoException.school_not_found()
-        return None
+        return schools
 
     def filter_association(self):
         """

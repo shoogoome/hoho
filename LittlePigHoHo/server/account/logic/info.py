@@ -25,13 +25,12 @@ class AccountLogic(object):
         获取账户model
         :return:
         """
-        if aid != '':
-            account = Account.objects.filter(id=aid)
-            if account.exists():
-                return account[0]
-        if thown:
+        if aid is None or aid == '':
+            return
+        account = Account.objects.get_once(id=aid)
+        if thown and account is None:
             raise AccountInfoExcept.account_filter_error()
-        return None
+        return account
 
     def check(self, *permission):
         """

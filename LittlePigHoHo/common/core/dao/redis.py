@@ -5,7 +5,7 @@ from django.conf import settings
 
 redis_pool = {}
 
-def get_redis_conn(db=2):
+def get_redis_conn(db=1):
     """
     建立Redis连接
     :param db:

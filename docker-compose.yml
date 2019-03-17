@@ -6,7 +6,7 @@ services:
     container_name: HoHo-Mysql
     volumes:
       - ./mysql:/var/lib/mysql
-      - ./my.cnf:/etc/mysql/my.cnf
+      - ./images/mysql/my.cnf:/etc/mysql/my.cnf
     environment:
       - MYSQL_ROOT_PASSWORD=littlepighoho17**
 
@@ -29,7 +29,7 @@ services:
     command: redis-server /etc/redis/redis.conf
 
   server:
-    build: ./image
+    build: ./images/server
     container_name: HoHo-Server
     restart: always
     depends_on: 
@@ -54,5 +54,5 @@ services:
       - "80:80"
       - "443:443"
     volumes: 
-      - ./nginx:/etc/nginx/conf.d
+      - ./images/web:/etc/nginx/conf.d
     

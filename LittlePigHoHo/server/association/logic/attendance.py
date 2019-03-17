@@ -62,9 +62,9 @@ class AttendanceLogic(object):
             if attendance.exists():
                 return attendance[0]
         else:
-            attendance = AssociationAttendance.objects.filter(id=aid, association=self.assocation)
-            if attendance.exists():
-                return attendance[0]
+            attendance = AssociationAttendance.objects.get_once(id=aid)
+            if attendance is not None:
+                return attendance
 
         raise AttendanceExcept.attendance_not_found()
 

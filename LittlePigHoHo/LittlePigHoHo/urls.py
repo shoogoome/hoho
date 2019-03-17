@@ -17,16 +17,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
-from server.repository.urls import urlpatterns as repository_urlpatterns
+# from server.repository.urls import urlpatterns as repository_urlpatterns
 from server.account.urls import urlpatterns as account_urlpatterns
 from server.school.urls import urlpatterns as school_urlpatterns
 from server.association.urls import urlpatterns as association_urlpatterns
-from .view import home
+from server.homepage.views import home
 
 urlpatterns = [
     path('', home),
     path('server_admin/', admin.site.urls),
-    path('repository', include(repository_urlpatterns)),
+    # path('repository', include(repository_urlpatterns)),
     path('account', include(account_urlpatterns)),
     path('school', include(school_urlpatterns)),
     # path('association', include(association_urlpatterns)),

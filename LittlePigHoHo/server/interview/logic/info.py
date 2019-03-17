@@ -50,13 +50,12 @@ class RegistrationLogic(object):
         :param rid:
         :return:
         """
-        if rid == "" or rid is None: return
-        registration = Registration.objects.filter(id=rid, association=self.association)
-        if not registration.exists():
-            if self.throw:
-                raise InterviewInfoExcept.no_registration()
-            return None
-        return registration[0]
+        if rid == "" or rid is None:
+            return
+        registration = Registration.objects.get_once(id=rid)
+        if registration is None and self.throw:
+            raise InterviewInfoExcept.no_registration()
+        return registration
 
     def get_using_template(self):
         """

@@ -1,0 +1,15 @@
+version: "3.3"
+  
+services:
+
+  server:
+    image: ubuntu:16.04
+    volumes:
+      - nfs-client:/root
+volumes:
+  nfs-client:
+    external: true
+
+
+
+docker volume create --driver=local --opt type=nfs --opt o=addr=39.108.229.132,rw --opt device=:/root nfs

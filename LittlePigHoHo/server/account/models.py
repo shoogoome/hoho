@@ -4,6 +4,7 @@
 from common.enum.account.sex import SexEnum
 from common.enum.account.role import RoleEnum
 from django.db import models
+from common.core.dao.cache.model_manager import HoHoModelManager
 
 class Account(models.Model):
     """
@@ -60,6 +61,9 @@ class Account(models.Model):
 
     # token
     temp_access_token = models.CharField(max_length=100)
+
+    # 重构管理器
+    objects = HoHoModelManager()
 
     def __str__(self):
         return '[%d] 昵称：%s, 角色：%s ,token: %s' % (

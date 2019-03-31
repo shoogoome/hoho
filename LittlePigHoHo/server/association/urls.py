@@ -1,4 +1,6 @@
 from django.urls import path, include
+from server.notice.urls import urlpatterns as notice_urlpatterns
+from server.task.urls import urlpatterns as task_urlpatterns
 
 from .views import *
 
@@ -48,4 +50,8 @@ urlpatterns = [
     path('/<int:aid>/departments', include(department_urlpatterns)),
     # 考勤
     path('/<int:aid>/attendances', include(attendance_urlpatterns)),
+    # 通知
+    path('/<int:aid>/notices', include(notice_urlpatterns)),
+    # 任务
+    path('/<int:aid>/tasks', include(task_urlpatterns)),
 ]

@@ -64,6 +64,9 @@ class AssociationTaskReport(models.Model):
     # 完成人
     worker = models.ForeignKey('association.AssociationAccount', blank=True, on_delete=models.SET_NULL, null=True)
 
+    # 是否已完成
+    complete = models.BooleanField(default=False)
+
     # 总结
     summary = models.TextField(default="")
 

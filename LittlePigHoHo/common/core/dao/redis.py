@@ -8,7 +8,7 @@ redis_pool = {}
 def get_redis_conn(db=1):
     """
     建立Redis连接
-    :param db:   1 - 考勤 2 - 数据库缓存 3 - 资源缓存
+    :param db: 0-session  1-考勤  2-数据库缓存  3-资源缓存
     :return:
     """
     if db not in redis_pool.keys():

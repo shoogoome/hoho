@@ -4,7 +4,6 @@ from .views import *
 urlpatterns = [
     # Info
     path('/me', AccountView.as_view(method=['GET'], STATUS=True)),
-    path('/status', AccountView.as_view(method=['POST'], STATUS=True)),
     path('/register', AccountView.as_view(method=['POST'])),
     path('/<int:aid>', AccountView.as_view(method=['GET', 'PUT'])),
     path('/root/<int:aid>', InfoView.as_view(method=['GET'])),

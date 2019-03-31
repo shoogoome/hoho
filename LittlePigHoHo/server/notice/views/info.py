@@ -33,6 +33,7 @@ class NoticeInfo(HoHoView):
         :param aid:
         :return:
         """
+        logic = NoticeLogic(self.auth, sid, aid)
         params = ParamsParser(request.JSON)
         title = params.str('title', desc='标题')
         content = params.str('content', desc='正文')
@@ -49,11 +50,12 @@ class NoticeInfo(HoHoView):
             content=content,
             start_time=start_time,
             end_time=end_time,
-            author=self.auth.get_account(),
+            author=logic.account,
             association_id=aid,
         )
         if params.has('department'):
             notice.department_id = department
+            notice.save()
 
         return Result(id=notice.id)
 
@@ -111,7 +113,7 @@ class NoticeView(HoHoView):
 
         notice = AssociationNotice.objects.values('id', 'update_time').filter(association_id=aid)
         if params.has('key'):
-            key = params.str('key', desc='关键字')
+            key = params.str('key', desc='关键字 标题 正文')
             notice = notice.filter(
                 Q(title__contains=key) |
                 Q(content__contains=key)

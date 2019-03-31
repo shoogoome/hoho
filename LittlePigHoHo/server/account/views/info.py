@@ -15,10 +15,10 @@ from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
 from ..logic.info import AccountLogic
 from ..models import Account
+from common.enum.account.sex import SexEnum
 
 
 class AccountView(HoHoView):
-
 
     STATUS = False
 
@@ -30,21 +30,18 @@ class AccountView(HoHoView):
         """
         params = ParamsParser(request.JSON)
         code = params.str('token', desc='验证ID')
+
         openid, session = self.get_openid(code)
         client_auth_mode = self.request.META.get('hoho-auth-model') == "client"
 
-        accounts = Account.objects.filter(temp_access_token=openid)
-        if not accounts.exists():
-            if self.STATUS:
-                return Result(status=False)
+        accounts = Account.objects.filter_cache(temp_access_token=openid)
+        if len(accounts) == 0:
             try:
+                realname = params.str('realname', desc='真实姓名')
                 account = Account.objects.create(
-                    realname=params.str('realname', desc='真实姓名'),
-                    nickname=params.str('realname', desc='真实姓名'),
-                    phone=params.str('phone', desc='电话号码'),
-                    email=params.str('email', desc='邮箱', require=False, default=""),
-                    sex=params.int('sex', desc='性别', require=False, default=0),
-                    motto=params.str('motto', desc='一句话留言', require=False, default=""),
+                    realname=realname,
+                    nickname=realname,
+                    sex=int(SexEnum.UNKNOW),
                     temp_access_token=openid,
                     role=int(RoleEnum.DIRECTOR),
                     permissions=AccountPermissionEntity().dumps(),
@@ -59,17 +56,11 @@ class AccountView(HoHoView):
         if client_auth_mode:
             return Result({
                 "id": _id,
-                "status": True,
                 "token": self.auth.create_token()
             })
 
         self.auth.set_account(account)
         self.auth.set_session()
-        if self.STATUS:
-            return Result({
-                "id": _id,
-                "status": True
-            })
 
         return Result(id=_id)
 

@@ -209,3 +209,6 @@ exit
 ls
 cd data
 exit
+apt-get install gcc
+gcc
+exit

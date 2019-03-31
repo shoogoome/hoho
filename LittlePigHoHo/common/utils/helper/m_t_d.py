@@ -11,6 +11,7 @@ def model_to_dict(instance, fields, __raw_name=''):
     :param __raw_name:
     :return:
     """
+    if instance is None: return
     opts = instance._meta.get_fields(include_parents=True, include_hidden=False)
     resule = dict()
 

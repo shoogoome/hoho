@@ -2,6 +2,8 @@ from server.association.logic.info import AssociationLogic
 from ..models import AssociationTask, AssociationTaskReport
 from common.exceptions.task.info import TaskInfoExcept
 from common.utils.helper.m_t_d import model_to_dict
+from common.exceptions.task.info import TaskInfoExcept
+
 
 class TaskLogic(AssociationLogic):
 
@@ -13,17 +15,16 @@ class TaskLogic(AssociationLogic):
 
     TASK_REPORT_FIELD = [
         'task', 'task__id', 'worker', 'worker__id', 'summary',
-        'create_time', 'update_time',
+        'create_time', 'update_time', 'complete'
     ]
 
-    def __init__(self, auth, sid, aid, tid="", trid=""):
+    def __init__(self, auth, sid, aid, tid=""):
         """
         任务模块逻辑
         :param auth:
         :param sid:
         :param aid:
         :param tid:
-        :param trid:
         """
         super(TaskLogic, self).__init__(auth, sid, aid)
 
@@ -31,11 +32,8 @@ class TaskLogic(AssociationLogic):
             self.task = tid
         else:
             self.task = self.get_task(tid)
-        if isinstance(trid, AssociationTaskReport):
-            self.task_report = trid
-        else:
-            self.task_report = self.get_task_report(trid)
-
+        if self.task is not None:
+            self.task_report = self.get_task_report()
 
     def get_task(self, tid):
         """
@@ -51,19 +49,16 @@ class TaskLogic(AssociationLogic):
 
         return task
 
-    def get_task_report(self, trid):
+    def get_task_report(self):
         """
         获取任务进度汇报
-        :param trid:
         :return:
         """
-        if trid == "" or trid is None:
-            return
-        task_report = AssociationTaskReport.objects.get_once(pk=trid)
-        if task_report is None:
-            raise TaskInfoExcept.no_task_report()
+        task_report = self.task.associationtaskreport_set.all()
+        if task_report.exists():
+            return task_report[0]
 
-        return task_report
+        return None
 
     def get_task_info(self):
         """
@@ -77,7 +72,9 @@ class TaskLogic(AssociationLogic):
         获取任务进度汇报信息
         :return:
         """
-        return model_to_dict(self.task_report, self.TASK_FIELD)
+        if self.task_report is None:
+            raise TaskInfoExcept.no_working()
+        return model_to_dict(self.task_report, self.TASK_REPORT_FIELD)
 
 
 

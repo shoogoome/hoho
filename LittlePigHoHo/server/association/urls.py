@@ -1,23 +1,51 @@
-from django.urls import path
-from .views.department import DepartmentInfo
-from .views.info import AssociationInfoView, AssociationVerification
-from .views.attendance import AttendanceView, AttendanceSign, AttendanceManage
+from django.urls import path, include
 
+from .views import *
+
+
+# 协会用户路由
+account_urlpatterns = [
+    path('', AssociationAccountInfo.as_view(method=['POST', 'PUT', 'DELETE'])),
+    path('/<int:acid>', AssociationAccountInfo.as_view(method=['GET', 'PUT', 'DELETE'])),
+    path('/list', AssociationAccountView.as_view(method=['GET'])),
+    path('/_mget', AssociationAccountView.as_view(method=['POST'])),
+]
+
+# 协会部门路由
+department_urlpatterns = [
+    path('', DepartmentInfo.as_view(method=['POST'])),
+    path('/<int:did>', DepartmentInfo.as_view(method=['GET', 'PUT', 'DELETE'])),
+    path('/list', DepartmentView.as_view(method=['GET'])),
+    path('/_mget', DepartmentView.as_view(method=['POST'])),
+    path('/add', DepartmentMatters.as_view(method=['POST'])),
+]
+
+# 考勤路由
+attendance_urlpatterns = [
+    # 考勤表信息
+    path('', AttendanceView.as_view(method=['POST'])),
+    path('/<int:vid>', AttendanceView.as_view(method=['GET', 'PUT', 'DELETE'])),
+    path('/list', AttendanceInfo.as_view(method=['GET'])),
+    path('/_mget', AttendanceInfo.as_view(method=['POST'])),
+    # 签到
+    path('/<int:vid>/sign', AttendanceSign.as_view(method=['GET', 'POST'])),
+    # 管理
+    path('/<int:vid>/leave', AttendanceManage.as_view(method=['GET'])),
+    path('/<int:vid>/manage', AttendanceManage.as_view(method=['POST'])),
+]
+
+# 主路由
 urlpatterns = [
+    # 协会
     path('', AssociationInfoView.as_view(method=['POST'])),
     path('/list', AssociationInfoView.as_view(method=['GET'])),
-    path('/<str:aid>', AssociationInfoView.as_view(method=['PUT', 'DELETE', 'GET'])),
-    path('/<str:aid>/recode', AssociationVerification.as_view(method=['GET'])),
-    path('/<str:aid>/apply', AssociationVerification.as_view(method=['GET'], APPLY=True)),
-    path('/<str:aid>/verification', AssociationVerification.as_view(method=['PUT'])),
-    # Attendance
-    path('/<str:aid>/attendance', AttendanceView.as_view(method=['GET'])),
-    path('/<str:aid>/attendance/create', AttendanceView.as_view(method=['POST'])),
-    # Department
-    path('/<str:aid>/department', DepartmentInfo.as_view(method=['POST'])),
-    path('/<str:aid>/department/<str:did>', DepartmentInfo.as_view(method=['GET', 'PUT', 'DELETE'])),
-    # Sign
-    path('/<str:aid>/attendance/<str:vid>', AttendanceSign.as_view(method=['GET', 'POST'])),
-    path('/<str:aid>/attendance/<str:vid>/leave', AttendanceManage.as_view(method=['GET'])),
-    path('/<str:aid>/attendance/<str:vid>/manage', AttendanceManage.as_view(method=['POST'])),
+    path('/_mget', AssociationVerification.as_view(method=['POST'])),
+    path('/<int:aid>', AssociationInfoView.as_view(method=['GET', 'PUT', 'DELETE'])),
+    path('/<int:aid>/recode', AssociationVerification.as_view(method=['GET'])),
+    # 协会用户
+    path('/<int:aid>/accounts', include(account_urlpatterns)),
+    # 部门
+    path('/<int:aid>/departments', include(department_urlpatterns)),
+    # 考勤
+    path('/<int:aid>/attendances', include(attendance_urlpatterns)),
 ]

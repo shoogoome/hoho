@@ -12,7 +12,7 @@
             default_: [
                 [gettext_noop('Now'), -1],
                 [gettext_noop('Midnight'), 0],
-                [gettext_noop('6 association.m.'), 6],
+                [gettext_noop('6 a.m.'), 6],
                 [gettext_noop('Noon'), 12],
                 [gettext_noop('6 p.m.'), 18]
             ]
@@ -61,13 +61,13 @@
                 return new Date();
             }
         },
-        // Add association warning when the time zone in the browser and backend do not match.
+        // Add a warning when the time zone in the browser and backend do not match.
         addTimezoneWarning: function(inp) {
             var $ = django.jQuery;
             var warningClass = DateTimeShortcuts.timezoneWarningClass;
             var timezoneOffset = DateTimeShortcuts.timezoneOffset / 3600;
 
-            // Only warn if there is association time zone mismatch.
+            // Only warn if there is a time zone mismatch.
             if (!timezoneOffset) {
                 return;
             }
@@ -103,7 +103,7 @@
                 .append($('<br>'))
                 .append($warning);
         },
-        // Add clock widget to association given field
+        // Add clock widget to a given field
         addClock: function(inp) {
             var num = DateTimeShortcuts.clockInputs.length;
             DateTimeShortcuts.clockInputs[num] = inp;
@@ -133,7 +133,7 @@
             quickElement(
                 'span', clock_link, '',
                 'class', 'clock-icon',
-                'title', gettext('Choose association Time')
+                'title', gettext('Choose a Time')
             );
             shortcuts_span.appendChild(document.createTextNode('\u00A0'));
             shortcuts_span.appendChild(now_link);
@@ -144,15 +144,15 @@
             //
             // Markup looks like:
             // <div id="clockbox1" class="clockbox module">
-            //     <h2>Choose association time</h2>
+            //     <h2>Choose a time</h2>
             //     <ul class="timelist">
-            //         <li><association href="#">Now</association></li>
-            //         <li><association href="#">Midnight</association></li>
-            //         <li><association href="#">6 association.m.</association></li>
-            //         <li><association href="#">Noon</association></li>
-            //         <li><association href="#">6 p.m.</association></li>
+            //         <li><a href="#">Now</a></li>
+            //         <li><a href="#">Midnight</a></li>
+            //         <li><a href="#">6 a.m.</a></li>
+            //         <li><a href="#">Noon</a></li>
+            //         <li><a href="#">6 p.m.</a></li>
             //     </ul>
-            //     <p class="calendar-cancel"><association href="#">Cancel</association></p>
+            //     <p class="calendar-cancel"><a href="#">Cancel</a></p>
             // </div>
 
             var clock_box = document.createElement('div');
@@ -163,11 +163,11 @@
             document.body.appendChild(clock_box);
             clock_box.addEventListener('click', function(e) { e.stopPropagation(); });
 
-            quickElement('h2', clock_box, gettext('Choose association time'));
+            quickElement('h2', clock_box, gettext('Choose a time'));
             var time_list = quickElement('ul', clock_box);
             time_list.className = 'timelist';
             // The list of choices can be overridden in JavaScript like this:
-            // DateTimeShortcuts.clockHours.name = [['3 association.m.', 3]];
+            // DateTimeShortcuts.clockHours.name = [['3 a.m.', 3]];
             // where name is the name attribute of the <input>.
             var name = typeof DateTimeShortcuts.clockHours[inp.name] === 'undefined' ? 'default_' : inp.name;
             DateTimeShortcuts.clockHours[name].forEach(function(element) {
@@ -232,7 +232,7 @@
             DateTimeShortcuts.clockInputs[num].focus();
             DateTimeShortcuts.dismissClock(num);
         },
-        // Add calendar widget to association given field.
+        // Add calendar widget to a given field.
         addCalendar: function(inp) {
             var num = DateTimeShortcuts.calendars.length;
 
@@ -262,7 +262,7 @@
             quickElement(
                 'span', cal_link, '',
                 'class', 'date-icon',
-                'title', gettext('Choose association Date')
+                'title', gettext('Choose a Date')
             );
             shortcuts_span.appendChild(document.createTextNode('\u00A0'));
             shortcuts_span.appendChild(today_link);
@@ -275,16 +275,16 @@
             //
             // <div id="calendarbox3" class="calendarbox module">
             //     <h2>
-            //           <association href="#" class="link-previous">&lsaquo;</association>
-            //           <association href="#" class="link-next">&rsaquo;</association> February 2003
+            //           <a href="#" class="link-previous">&lsaquo;</a>
+            //           <a href="#" class="link-next">&rsaquo;</a> February 2003
             //     </h2>
             //     <div class="calendar" id="calendarin3">
             //         <!-- (cal) -->
             //     </div>
             //     <div class="calendar-shortcuts">
-            //          <association href="#">Yesterday</association> | <association href="#">Today</association> | <association href="#">Tomorrow</association>
+            //          <a href="#">Yesterday</a> | <a href="#">Today</a> | <a href="#">Tomorrow</a>
             //     </div>
-            //     <p class="calendar-cancel"><association href="#">Cancel</association></p>
+            //     <p class="calendar-cancel"><a href="#">Cancel</a></p>
             // </div>
             var cal_box = document.createElement('div');
             cal_box.style.display = 'none';
@@ -358,7 +358,7 @@
             var cal_link = document.getElementById(DateTimeShortcuts.calendarLinkName + num);
             var inp = DateTimeShortcuts.calendarInputs[num];
 
-            // Determine if the current value in the input has association valid date.
+            // Determine if the current value in the input has a valid date.
             // If so, draw the calendar with that date's year and month.
             if (inp.value) {
                 var format = get_format('DATE_INPUT_FORMATS')[0];
@@ -400,7 +400,7 @@
         },
         handleCalendarCallback: function(num) {
             var format = get_format('DATE_INPUT_FORMATS')[0];
-            // the format needs to be escaped association little
+            // the format needs to be escaped a little
             format = format.replace('\\', '\\\\');
             format = format.replace('\r', '\\r');
             format = format.replace('\n', '\\n');

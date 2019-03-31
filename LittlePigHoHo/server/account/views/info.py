@@ -1,31 +1,30 @@
 import json
 
+import requests
+from django.db.models import Q
+
 from common.core.auth.check_login import check_login
 from common.core.http.view import HoHoView
+from common.entity.account.permission import AccountPermissionEntity
 # from common.entity.account.permission import *
 from common.enum.account.permission import AccountPermissionEnum
 from common.enum.account.role import RoleEnum
 from common.exceptions.account.info import AccountInfoExcept
-from common.utils.helper.m_t_d import model_to_dict
+from common.utils.helper.pagination import slicer
 from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
 from ..logic.info import AccountLogic
 from ..models import Account
-from common.entity.account.permission import AccountPermissionEntity
-import requests
-from common.entity.account.permission import AccountPermissionEntity
 
 
 class AccountView(HoHoView):
-    NORMAL_FILES = [
-        'nickname', 'realname', 'sex', 'avator', 'motto', 'temp_access_token', 'permissions'
-    ]
+
 
     STATUS = False
 
     def post(self, request):
         """
-        注册账户 o登陆账户
+        注册账户 or 登陆账户
         :param request:
         :return:
         """
@@ -89,7 +88,7 @@ class AccountView(HoHoView):
             logic = AccountLogic(self.auth, aid)
             logic.check(AccountPermissionEnum.VIEWS)
 
-        return Result(model_to_dict(logic.account, self.NORMAL_FILES))
+        return Result()
 
     @check_login
     def put(self, request, aid=''):
@@ -145,25 +144,80 @@ class AccountView(HoHoView):
 
 class InfoView(HoHoView):
 
+    LIST = False
+
     @check_login
     def get(self, request, aid):
         """
-        提权（创建协会权限）
+        提权（创建协会权限）or 获取用户列表
         :param request:
         :param aid:
         :return:
         """
-        # 权限控制
-        alogic = AccountLogic(self.auth, aid)
-        if self.auth.get_account().role != int(RoleEnum.ADMIN):
-            raise AccountInfoExcept.no_permission()
+        if not self.LIST:
+            # 权限控制
+            alogic = AccountLogic(self.auth, aid)
+            if self.auth.get_account().role != int(RoleEnum.ADMIN):
+                raise AccountInfoExcept.no_permission()
 
-        permissions = AccountPermissionEntity.parse(alogic.account.permissions)
-        permissions.set_value('create', True)
-        alogic.account.permissions = permissions.dumps()
-        alogic.account.save()
+            permissions = AccountPermissionEntity.parse(alogic.account.permissions)
+            permissions.create = True
+            alogic.account.permissions = permissions.dumps()
+            alogic.account.save()
 
-        return Result(id=alogic.account.id)
+            return Result(id=alogic.account.id)
+
+        params = ParamsParser(request.GET)
+        limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
+        page = params.int('page', desc='当前页数', require=False, default=1)
+
+        accounts = Account.objects.values('id', 'update_time').all()
+
+        if params.has('key'):
+            key = params.str('key', desc='关键字 email 昵称 真实姓名 联系电话')
+            accounts = accounts.filter(
+                Q(email__contains=key) |
+                Q(nickname__contains=key) |
+                Q(realname__contains=key) |
+                Q(phone__contains=key)
+            )
+
+        if params.has('role'):
+            accounts = accounts.filter(role=params.int('role', desc='身份角色'))
+
+        @slicer(
+            accounts,
+            limit=limit,
+            page=page
+        )
+        def get_account_list(obj):
+            return obj
+
+        accounts, pagination = get_account_list()
+        return Result(accounts=accounts, pagination=pagination)
+
+    def post(self, request):
+        """
+        批量获取用户信息
+        :param request:
+        :return:
+        """
+        params = ParamsParser(request.JSON)
+        logic = AccountLogic(self.auth)
+
+        ids = params.list('ids', desc='id列表')
+        accounts = Account.objects.get_many(ids=ids)
+
+        data = []
+        for account in accounts:
+            try:
+                logic.account = account
+                data.append(logic.get_account_info())
+            except:
+                pass
+
+        return Result(data)
+
 
 # !!!!! 仅仅为开发使用 !!!!!
 class Login(HoHoView):

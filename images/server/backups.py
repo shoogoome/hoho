@@ -4,11 +4,11 @@ import time
 
 def mysqldump():
 
-    path = '/root/LittlePigHoHo/backups'
+    path = '/root/backups'
     # 筛选一个星期以前的备份
     os.system('find {}  -ctime +7 -name "*.sql" -delete '.format(path))
     # 创建新备份
-    os.system('mysqldump -h mysqldb -u root -plittlepighoho17** hoho > {}/{}.sql'.format(path, time.time()))
+    os.system('mysqldump -h mysqldb -u root -plittlepighoho17** hoho > {}/{}.sql'.format(path, time.strftime("%Y-%m-%d.%H:%M:%S", time.localtime(time.time()))))
 
 if __name__ == '__main__':
 

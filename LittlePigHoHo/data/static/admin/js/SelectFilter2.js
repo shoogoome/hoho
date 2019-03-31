@@ -1,6 +1,6 @@
 /*global SelectBox, gettext, interpolate, quickElement, SelectFilter*/
 /*
-SelectFilter2 - Turns association multiple-select box into association filter interface.
+SelectFilter2 - Turns a multiple-select box into a filter interface.
 
 Requires jQuery, core.js, and SelectBox.js.
 */

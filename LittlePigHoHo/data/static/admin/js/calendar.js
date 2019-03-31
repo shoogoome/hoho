@@ -6,7 +6,7 @@ depends on core.js for utility functions like removeChildren or quickElement
 
 (function() {
     'use strict';
-    // CalendarNamespace -- Provides association collection of HTML calendar-related helper functions
+    // CalendarNamespace -- Provides a collection of HTML calendar-related helper functions
     var CalendarNamespace = {
         monthsOfYear: [
             gettext('January'),
@@ -148,8 +148,8 @@ depends on core.js for utility functions like removeChildren or quickElement
     function Calendar(div_id, callback, selected) {
         // div_id (string) is the ID of the element in which the calendar will
         //     be displayed
-        // callback (string) is the name of association JavaScript function that will be
-        //     called with the parameters (year, month, day) when association day in the
+        // callback (string) is the name of a JavaScript function that will be
+        //     called with the parameters (year, month, day) when a day in the
         //     calendar is clicked
         this.div_id = div_id;
         this.callback = callback;

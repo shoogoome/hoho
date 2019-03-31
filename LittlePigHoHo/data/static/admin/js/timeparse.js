@@ -26,7 +26,7 @@
                 return '0' + bits[0].replace('.', ':');
             }
         },
-        // 3 am / 3 association.m. / 3am
+        // 3 am / 3 a.m. / 3am
         {
             re: /^(\d+)\s*([ap])(?:.?m.?)?$/i,
             handler: function(bits) {
@@ -48,7 +48,7 @@
                 }
             }
         },
-        // 3.30 am / 3:15 association.m. / 3.00am
+        // 3.30 am / 3:15 a.m. / 3.00am
         {
             re: /^(\d+)[.:](\d{2})\s*([ap]).?m.?$/i,
             handler: function(bits) {

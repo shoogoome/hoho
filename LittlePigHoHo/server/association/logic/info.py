@@ -10,33 +10,38 @@ from server.school.models import School
 from ..models import Association
 from common.exceptions.scheduling.curriculum import CurriculumExcept
 from common.entity.scheduling.curriculum import SchedulingCurriculumEntity
+from server.school.logic.info import SchoolLogic
+from ..models import AssociationAccount, AssociationAttendance
+from common.utils.helper.m_t_d import model_to_dict
 
+class AssociationLogic(SchoolLogic):
 
-class AssociationLogic(object):
+    ASS_NOMAL_FILE = [
+        'id', 'association', 'school__id', 'school__name', 'name', 'short_name', 'logo', 'description',
+    ]
 
-    def __init__(self, auth, sid, aid):
+    ASS_SECRECY_FILE = [
+        'backlog', 'config', 'choosing_code',
+    ]
+
+    ADMIN_FILE = [
+        'premium_level', 'premium_deadline', 'repository_size',
+    ]
+
+    def __init__(self, auth, sid, aid=""):
         """
         INIT
         :param auth:
         :param sid:
         :param aid:
         """
-        self.auth = auth
+        super(AssociationLogic, self).__init__(auth, sid)
 
-        if isinstance(sid, SchoolLogic):
-            self.schoolLogic = sid
-            self.school = sid.school
-        elif isinstance(sid, School):
-            self.schoolLogic = SchoolLogic(self.auth, sid)
-            self.school = sid
-        else:
-            self.schoolLogic = SchoolLogic(self.auth, sid)
-            self.school = self.schoolLogic.school
         if isinstance(aid, Association):
             self.association = Association
         else:
             self.association = self.get_association(aid)
-        self.ass_acc = self.get_association_account()
+        self.account = self.get_association_account()
 
     def get_association(self, aid):
         """
@@ -44,8 +49,10 @@ class AssociationLogic(object):
         :param aid:
         :return:
         """
-        association = Association.objects.get_once(id=aid)
-        if association is None:
+        if aid == "" or aid is None:
+            return None
+        association = Association.objects.get_once(pk=aid)
+        if association is None or association.school_id != self.school.id:
             raise AssociationExcept.association_not_found()
         return association
 
@@ -54,10 +61,31 @@ class AssociationLogic(object):
         获取人事表
         :return:
         """
-        ass_acc = self.association.associationaccount_set.filter(account=self.auth.get_account())
-        if ass_acc.exists():
+        ass_acc = AssociationAccount.objects.filter_cache(
+            account=self.auth.get_account(), association=self.association)
+        if ass_acc is not None or ass_acc != []:
             return ass_acc[0]
         return None
+
+    def get_association_info(self):
+        """
+        获取协会信息
+        :return:
+        """
+        # 获取全部信息或部分信息
+        field = (self.ASS_SECRECY_FILE + self.ASS_NOMAL_FILE) \
+            if self.check(AssociationPermissionEnum.MANAGE) else self.ASS_NOMAL_FILE
+
+        if self.auth.get_account().role == int(RoleEnum.ADMIN):
+            field += self.ADMIN_FILE
+        return model_to_dict(self.association, field)
+
+    def filter_account(self):
+        """
+        获取协会人事
+        :return:
+        """
+        return AssociationAccount.objects.filter_cache(association=self.association)
 
     def get_curriculum(self):
         """
@@ -65,6 +93,7 @@ class AssociationLogic(object):
         :return:
         """
         curriculum = self.association.curriculum_set.all()
+
         if not curriculum.exists():
             raise CurriculumExcept.no_curriculum()
         return curriculum[0]
@@ -102,60 +131,60 @@ class AssociationLogic(object):
         获取所有考勤记录
         :return:
         """
-        return self.association.associationattendance_set.all()
+        return AssociationAttendance.objects.filter_cache(association=self.association)
 
-    def check(self, *permission):
-        """
-        权限处理
-        :param permission:
-        :return:
-        """
-        if self.auth.get_account().role == int(RoleEnum.ADMIN):
-            return True
-        if not AssociationLogic.inspect(self.auth.get_account(), self.association, *permission):
-            raise AssociationExcept.no_permission()
-
-        return True
-
-    @staticmethod
-    def inspect(account, association, ass_acc=None, *permission):
-        """
-        权限检查
-        :param account: 登陆account
-        :param association: 协会model
-        :param ass_acc: 协会人事表model
-        :param permission: 判断权限
-        :return:
-        """
-        account_permission = json.loads(account.permissions)
-        ass_permission = json.loads(association.configure)
-
-        role = ass_acc.role if ass_acc is not None else None
-        _att = ass_permission.get('attendance', dict())
-        _manage = account.id in ass_permission.get('manage', [])
-        # 查看协会权限（是否为协会成员）
-        if AssociationPermissionEnum.VIEWS in permission:
-            if ass_acc is not None:
-                return True
-        # 判断管理员权限
-        if _manage or (role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]):
-            return True
-        # 添加协会成员权限 老师 会长 管理员 and 请求管理权限
-        # if (AssociationPermissionEnum.MANAGE in permission) or (AssociationPermissionEnum.ADDDIRECTOR in permission):
-        #     if role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]:
-        #         return True
-
-        # 判断创建部门权限
-        if AssociationPermissionEnum.DEPARTMENT_CREATE in permission:
-            if role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]:
-                return True
-
-        # 检查考勤权限
-        if _att is dict():
-            return False
-
-        if AssociationPermissionEnum.ATTENDANCE_CREATE in permission:
-            if account.id in _att.get('create', list()):
-                return True
-
-        return False
+    # def check(self, *permission):
+    #     """
+    #     权限处理
+    #     :param permission:
+    #     :return:
+    #     """
+    #     if self.auth.get_account().role == int(RoleEnum.ADMIN):
+    #         return True
+    #     if not AssociationLogic.inspect(self.auth.get_account(), self.association, *permission):
+    #         raise AssociationExcept.no_permission()
+    #
+    #     return True
+    #
+    # @staticmethod
+    # def inspect(account, association, ass_acc=None, *permission):
+    #     """
+    #     权限检查
+    #     :param account: 登陆account
+    #     :param association: 协会model
+    #     :param ass_acc: 协会人事表model
+    #     :param permission: 判断权限
+    #     :return:
+    #     """
+    #     account_permission = json.loads(account.permissions)
+    #     ass_permission = json.loads(association.configure)
+    #
+    #     role = ass_acc.role if ass_acc is not None else None
+    #     _att = ass_permission.get('attendance', dict())
+    #     _manage = account.id in ass_permission.get('manage', [])
+    #     # 查看协会权限（是否为协会成员）
+    #     if AssociationPermissionEnum.VIEWS in permission:
+    #         if ass_acc is not None:
+    #             return True
+    #     # 判断管理员权限
+    #     if _manage or (role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]):
+    #         return True
+    #     # 添加协会成员权限 老师 会长 管理员 and 请求管理权限
+    #     # if (AssociationPermissionEnum.MANAGE in permission) or (AssociationPermissionEnum.ADDDIRECTOR in permission):
+    #     #     if role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]:
+    #     #         return True
+    #
+    #     # 判断创建部门权限
+    #     if AssociationPermissionEnum.DEPARTMENT_CREATE in permission:
+    #         if role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]:
+    #             return True
+    #
+    #     # 检查考勤权限
+    #     if _att is dict():
+    #         return False
+    #
+    #     if AssociationPermissionEnum.ATTENDANCE_CREATE in permission:
+    #         if account.id in _att.get('create', list()):
+    #             return True
+    #
+    #     return False

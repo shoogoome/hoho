@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 # coding:utf-8
 
-from common.enum.account.sex import SexEnum
-from common.enum.account.role import RoleEnum
 from django.db import models
+
 from common.core.dao.cache.model_manager import HoHoModelManager
+from common.enum.account.role import RoleEnum
+from common.enum.account.sex import SexEnum
+from common.core.dao.cache.factory import delete_model_single_object_cache
+from django.dispatch import receiver
+from django.db.models.signals import post_save, post_delete
+from common.core.dao.time_stamp import TimeStampField
+
 
 class Account(models.Model):
     """
@@ -17,7 +23,7 @@ class Account(models.Model):
         app_label = 'account'
 
     # Email
-    email = models.EmailField(default='', blank=True)
+    email = models.CharField(default='', blank=True, max_length=125)
 
     # Email 已通过验证
     email_validated = models.BooleanField(default=False)
@@ -36,7 +42,7 @@ class Account(models.Model):
     # 用户角色
     role = models.PositiveSmallIntegerField(**RoleEnum.get_models_params())
 
-    # 电话信息(留着吧，未来可能启用）
+    # 电话信息
     phone = models.CharField(max_length=20, default='', blank=True)
 
     # 电话已通过验证(留着吧，未来可能启用）
@@ -50,11 +56,13 @@ class Account(models.Model):
 
     # ==== 扩展信息 ====
 
+    from common.core.dao.time_stamp import TimeStampField
+
     # 创建时间
-    create_time = models.DateTimeField(auto_now_add=True)
+    create_time = TimeStampField(auto_now_add=True)
 
     # 最后更新时间
-    update_time = models.DateTimeField(auto_now=True)
+    update_time = TimeStampField(auto_now=True)
 
     # 账户权限信息
     permissions = models.TextField(default='{}')
@@ -70,3 +78,8 @@ class Account(models.Model):
             self.id, self.nickname, str(self.role), self.temp_access_token
         )
 
+
+
+
+receiver(post_save, sender=Account)(delete_model_single_object_cache)
+receiver(post_delete, sender=Account)(delete_model_single_object_cache)

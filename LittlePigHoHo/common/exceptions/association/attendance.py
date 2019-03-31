@@ -9,3 +9,7 @@ class AttendanceExcept(HoHoExceptBase):
     @classmethod
     def time_out(cls):
         return cls("考勤已结束")
+
+    @classmethod
+    def title_exist(cls):
+        return cls("标题以存在")

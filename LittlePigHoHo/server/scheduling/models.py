@@ -1,5 +1,12 @@
 from django.db import models
 from common.core.dao.cache.model_manager import HoHoModelManager
+from common.core.dao.cache.factory import bind_model_cached_manager_signal
+from common.core.dao.cache.factory import delete_model_single_object_cache
+from django.dispatch import receiver
+from django.db.models.signals import post_save, post_delete
+
+from common.core.dao.time_stamp import TimeStampField
+
 
 class AssociationCurriculum(models.Model):
     """
@@ -22,6 +29,13 @@ class AssociationCurriculum(models.Model):
 
     # 内容
     content = models.TextField(default='{}')
+
+    # 创建时间
+    create_time = TimeStampField(auto_now_add=True)
+
+    # 最后更新时间
+    update_time = TimeStampField(auto_now=True)
+
 
     # 重构管理器
     objects = HoHoModelManager()
@@ -47,6 +61,14 @@ class AssociationAccountCurriculum(models.Model):
 
     # 内容
     content = models.TextField(default='{}')
+
+    from common.core.dao.time_stamp import TimeStampField
+
+    # 创建时间
+    create_time = TimeStampField(auto_now_add=True)
+
+    # 最后更新时间
+    update_time = TimeStampField(auto_now=True)
 
     # 重构管理器
     objects = HoHoModelManager()
@@ -90,13 +112,10 @@ class AssociationScheduling(models.Model):
     end_time = models.FloatField(default=0.0)
 
     # 创建时间
-    create_time = models.DateTimeField(auto_now_add=True)
+    create_time = TimeStampField(auto_now_add=True)
 
     # 最后更新时间
-    update_time = models.DateTimeField(auto_now=True)
-
-    # 管理员
-    manager = models.ManyToManyField('association.AssociationAccount', blank=True, related_name='scheduling_manager')
+    update_time = TimeStampField(auto_now=True)
 
     # 重构管理器
     objects = HoHoModelManager()
@@ -104,4 +123,13 @@ class AssociationScheduling(models.Model):
     def __str__(self):
         return "[{}] {} {}".format(self.id, self.title, self.association.name)
 
+
+receiver(post_save, sender=AssociationAccountCurriculum)(delete_model_single_object_cache)
+receiver(post_delete, sender=AssociationAccountCurriculum)(delete_model_single_object_cache)
+
+receiver(post_save, sender=AssociationCurriculum)(delete_model_single_object_cache)
+receiver(post_delete, sender=AssociationCurriculum)(delete_model_single_object_cache)
+
+receiver(post_save, sender=AssociationScheduling)(delete_model_single_object_cache)
+receiver(post_delete, sender=AssociationScheduling)(delete_model_single_object_cache)
 

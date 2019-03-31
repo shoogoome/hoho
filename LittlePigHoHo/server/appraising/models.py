@@ -1,7 +1,10 @@
 from django.db import models
 from common.core.dao.cache.model_manager import HoHoModelManager
+from common.core.dao.cache.factory import delete_model_single_object_cache
+from django.dispatch import receiver
+from django.db.models.signals import post_save, post_delete
 
-# Create your models here.
+from common.core.dao.time_stamp import TimeStampField
 
 class AppraisingScoreTemplate(models.Model):
 
@@ -23,13 +26,10 @@ class AppraisingScoreTemplate(models.Model):
     config = models.TextField(default="{}")
 
     # 创建时间
-    create_time = models.DateTimeField(auto_now_add=True)
+    create_time = TimeStampField(auto_now_add=True)
 
     # 最后更新时间
-    update_time = models.DateTimeField(auto_now=True)
-
-    # 管理员
-    manager = models.ManyToManyField('association.AssociationAccount', blank=True, related_name='notice_manager')
+    update_time = TimeStampField(auto_now=True)
 
     # 重构管理器
     objects = HoHoModelManager()
@@ -58,13 +58,26 @@ class AppraisingScore(models.Model):
     content = models.TextField(default="{}")
 
     # 创建时间
-    create_time = models.DateTimeField(auto_now_add=True)
+    create_time = TimeStampField(auto_now_add=True)
 
     # 最后更新时间
-    update_time = models.DateTimeField(auto_now=True)
+    update_time = TimeStampField(auto_now=True)
 
     # 重构管理器
     objects = HoHoModelManager()
 
     def __str__(self):
         return "[{}] {} {}".format(self.id, self.author.nickname, self.association.name)
+
+
+
+
+receiver(post_save, sender=AppraisingScore)(delete_model_single_object_cache)
+receiver(post_delete, sender=AppraisingScore)(delete_model_single_object_cache)
+
+receiver(post_save, sender=AppraisingScoreTemplate)(delete_model_single_object_cache)
+receiver(post_delete, sender=AppraisingScoreTemplate)(delete_model_single_object_cache)
+
+
+
+

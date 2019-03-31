@@ -12,7 +12,7 @@ class AccountPermissionEntity(EntityBase):
         # 创建协会权限
         self.create = PropType.bool(default=False, required=True)
         # 可查看协会列表
-        self.view = PropType.list(default=list(), required=True)
+        # self.view = PropType.list(default=list(), required=True)
 
         # 解析参数
         super(AccountPermissionEntity, self).__init__(**kwargs)

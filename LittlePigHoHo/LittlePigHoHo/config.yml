@@ -33,11 +33,12 @@ databases:
 #  TIMEZONE: 'Asia/Shanghai'
 #  raven_dsn: 'https://f63e473aca904afda2febe258bb04e43@sentry.wejudge.net/3'
 
+
 redis:
   host: 'redis'
   port: 6379
-  password: '12345678'
-  
+  password: 'littlepighoho17**'
+
 #secerts:
 #  HMAC_SALT: '2565ebcbfe867bacca4f77b72d63c5dbd0d8316bbb5bb7fc996c57568d8b654f'
 #  ACCOUNT_PASSWORD_SALT: '0A888E506D66D170E6DE7E2B'

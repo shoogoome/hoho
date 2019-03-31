@@ -38,7 +38,7 @@
         var nextIndex = parseInt(totalForms.val(), 10);
         var maxForms = $("#id_" + options.prefix + "-MAX_NUM_FORMS").prop("autocomplete", "off");
         // only show the add button if we are allowed to add more items,
-        // note that max_num = None translates to association blank string.
+        // note that max_num = None translates to a blank string.
         var showAddButton = maxForms.val() === '' || (maxForms.val() - totalForms.val()) > 0;
         $this.each(function(i) {
             $(this).not("." + options.emptyCssClass).addClass(options.formCssClass);
@@ -48,13 +48,13 @@
             if (addButton === null) {
                 if ($this.prop("tagName") === "TR") {
                     // If forms are laid out as table rows, insert the
-                    // "add" button in association new table row:
+                    // "add" button in a new table row:
                     var numCols = this.eq(-1).children().length;
-                    $parent.append('<tr class="' + options.addCssClass + '"><td colspan="' + numCols + '"><association href="#">' + options.addText + "</association></tr>");
-                    addButton = $parent.find("tr:last association");
+                    $parent.append('<tr class="' + options.addCssClass + '"><td colspan="' + numCols + '"><a href="#">' + options.addText + "</a></tr>");
+                    addButton = $parent.find("tr:last a");
                 } else {
                     // Otherwise, insert it immediately after the last form:
-                    $this.filter(":last").after('<div class="' + options.addCssClass + '"><association href="#">' + options.addText + "</association></div>");
+                    $this.filter(":last").after('<div class="' + options.addCssClass + '"><a href="#">' + options.addText + "</a></div>");
                     addButton = $this.filter(":last").next().find("a");
                 }
             }
@@ -68,15 +68,15 @@
                 if (row.is("tr")) {
                     // If the forms are laid out in table rows, insert
                     // the remove button into the last table cell:
-                    row.children(":last").append('<div><association class="' + options.deleteCssClass + '" href="#">' + options.deleteText + "</association></div>");
+                    row.children(":last").append('<div><a class="' + options.deleteCssClass + '" href="#">' + options.deleteText + "</a></div>");
                 } else if (row.is("ul") || row.is("ol")) {
                     // If they're laid out as an ordered/unordered list,
                     // insert an <li> after the last list item:
-                    row.append('<li><association class="' + options.deleteCssClass + '" href="#">' + options.deleteText + "</association></li>");
+                    row.append('<li><a class="' + options.deleteCssClass + '" href="#">' + options.deleteText + "</a></li>");
                 } else {
                     // Otherwise, just insert the remove button as the
                     // last child element of the form's container:
-                    row.children(":first").append('<span><association class="' + options.deleteCssClass + '" href="#">' + options.deleteText + "</association></span>");
+                    row.children(":first").append('<span><a class="' + options.deleteCssClass + '" href="#">' + options.deleteText + "</a></span>");
                 }
                 row.find("*").each(function() {
                     updateElementIndex(this, options.prefix, totalForms.val());
@@ -90,13 +90,13 @@
                 if ((maxForms.val() !== '') && (maxForms.val() - totalForms.val()) <= 0) {
                     addButton.parent().hide();
                 }
-                // The delete button of each row triggers association bunch of other things
+                // The delete button of each row triggers a bunch of other things
                 row.find("a." + options.deleteCssClass).on('click', function(e1) {
                     e1.preventDefault();
                     // Remove the parent form containing this button:
                     row.remove();
                     nextIndex -= 1;
-                    // If association post-delete callback was provided, call it with the deleted form:
+                    // If a post-delete callback was provided, call it with the deleted form:
                     if (options.removed) {
                         options.removed(row);
                     }
@@ -119,7 +119,7 @@
                         $(forms.get(i)).find("*").each(updateElementCallback);
                     }
                 });
-                // If association post-add callback was supplied, call it with the added form:
+                // If a post-add callback was supplied, call it with the added form:
                 if (options.added) {
                     options.added(row);
                 }
@@ -137,9 +137,9 @@
         addCssClass: "add-row",      // CSS class applied to the add link
         deleteCssClass: "delete-row",  // CSS class applied to the delete link
         emptyCssClass: "empty-row",    // CSS class applied to the empty row
-        formCssClass: "dynamic-form",  // CSS class applied to each form in association formset
-        added: null,          // Function called each time association new form is added
-        removed: null,          // Function called each time association form is deleted
+        formCssClass: "dynamic-form",  // CSS class applied to each form in a formset
+        added: null,          // Function called each time a new form is added
+        removed: null,          // Function called each time a form is deleted
         addButton: null       // Existing add button to use
     };
 
@@ -162,8 +162,8 @@
         };
 
         var updateSelectFilter = function() {
-            // If any SelectFilter widgets are association part of the new form,
-            // instantiate association new SelectFilter instance for it.
+            // If any SelectFilter widgets are a part of the new form,
+            // instantiate a new SelectFilter instance for it.
             if (typeof SelectFilter !== 'undefined') {
                 $('.selectfilter').each(function(index, value) {
                     var namearr = value.name.split('-');
@@ -230,7 +230,7 @@
         };
 
         var updateSelectFilter = function() {
-            // If any SelectFilter widgets were added, instantiate association new instance.
+            // If any SelectFilter widgets were added, instantiate a new instance.
             if (typeof SelectFilter !== "undefined") {
                 $(".selectfilter").each(function(index, value) {
                     var namearr = value.name.split('-');

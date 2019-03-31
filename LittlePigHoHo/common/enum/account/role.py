@@ -8,7 +8,6 @@ class RoleEnum(EnumBase):
     DIRECTOR = 0
     MINISTER = 1
     PRESIDENT = 2
-    TEACHER = 4
     ADMIN = 99
 
     __default__ = DIRECTOR

@@ -20,7 +20,7 @@ function quickElement() {
     return obj;
 }
 
-// "association" is reference to an object
+// "a" is reference to an object
 function removeChildren(a) {
     'use strict';
     while (a.hasChildNodes()) {

@@ -11,6 +11,8 @@ case $1 in
     docker build -t hoho-mysql ${basepath}'/mysql'
     # redis
     docker build -t hoho-redis ${basepath}'/redis'
+    # redis-secondary
+    docker build -t hoho-redis-secondary ${basepath}'/redis-secondary'
     ;;
     "up")
     docker stack deploy --compose-file docker-stack.yml 'hoho'

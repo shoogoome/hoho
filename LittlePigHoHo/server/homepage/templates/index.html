@@ -1,0 +1,294 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>只为遇见你</title>
+    <link href="{% static "index.css" %}" rel="stylesheet" type="text/css"/>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<body>
+
+<div class="whole">
+
+
+    <div class="head">
+        <!--logo-->
+        <img class="youku" src="{% static "youku.png" %}"/>
+        <!--导航栏左侧-->
+        <ul class="guide">
+            <li>
+                <a class="guide-a" href="https://tv.youku.com/?spm=a2h0j.11185381.topNav.1~3~A">剧集</a>
+            </li>
+            <li>
+                <a class="guide-a" href="https://movie.youku.com/?spm=a2h0j.11185381.topNav.1~3!2~A">电影</a>
+            </li>
+            <li>
+                <a class="guide-a" href="https://zy.youku.com/?spm=a2h0j.11185381.topNav.1~3!3~A">综艺</a>
+            </li>
+            <li>
+                <a class="guide-a" href="https://www.laifeng.com/?spm=a2h0j.11185381.topNav.1~3!4~A">来疯</a>
+            </li>
+            <li>
+                <a class="guide-a" href="https://child.youku.com/?spm=a2h0j.11185381.topNav.1~3!5~A">少儿</a>
+            </li>
+            <li>
+                <a class="guide-a" href="https://music.youku.com/?spm=a2h0j.11185381.topNav.1~3!6~A">音乐</a>
+            </li>
+            <li>
+                <a class="guide-a" href="https://live.youku.com/?spm=a2h0j.11185381.topNav.1~3!7~A">直播</a>
+            </li>
+            <li>
+                <a class="guide-a" href="http://list.youku.com/category/video/?spm=a2h0j.11185381.topNav.1~3!8~A">片库</a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" onmousemove="yuanyuan()" onmouseleave="yuandown()">
+                    <img class="guide-img" id="logo" src="{% static "logo.png" %}">
+                        <ul class="yuanyuan"  onmouseleave="yuanyuandown()">
+                            <li class="arrow"></li>
+                            <li>
+                                <div class="content">
+                                    <dl class="top-nav-channel">
+                                        <dt>全部频道</dt>
+                                        <dd>
+                                            <a href="//tv.youku.com/">剧集</a>
+                                            <a href="//movie.youku.com/">电影</a>
+                                            <a href="//zy.youku.com/">综艺</a>
+                                            <br/>
+                                            <a href="//comic.youku.com/">动漫</a>
+                                            <a href="//ent.youku.com/">娱乐</a>
+                                            <a href="//life.youku.com/">生活</a></dd>
+                                        <dd>
+                                            <a href="//child.youku.com/">少儿</a>
+                                            <a href="//www.laifeng.com" target="_blank">来疯</a>
+                                            <a href="//music.youku.com/">音乐</a>
+                                            <br/>
+                                            <a href="//fun.youku.com/">搞笑</a>
+                                            <a href="//live.youku.com/">直播</a>
+                                            <a href="http://list.youku.com/category/video/" target="_blank">片库</a></dd>
+                                        <dd>
+                                            <a href="//jilupian.youku.com/">纪实</a>
+                                            <a href="//gongyi.youku.com/">公益</a>
+                                            <a href="//sports.youku.com/">体育</a>
+                                            <br/>
+                                            <a href="//auto.youku.com/">汽车</a>
+                                            <a href="//tech.youku.com/">科技</a>
+                                            <a href="//finance.youku.com/">财经</a></dd>
+                                        <dd>
+                                            <a href="http://culture.youku.com/">文化</a>
+                                            <a href="//travel.youku.com/">旅游</a>
+                                            <a href="//fashion.youku.com/">时尚</a>
+                                            <br/>
+                                            <a href="//baby.youku.com/">亲子</a>
+                                            <a href="//edu.youku.com/">教育</a>
+                                            <a href="//game.youku.com/">游戏</a></dd>
+                                        <dd>
+                                            <a href="//vip.youku.com/">会员</a>
+                                            <br/>
+                                            <a href="//vr.youku.com/">VR</a></dd>
+                                    </dl>
+                                    <dl>
+                                        <dt>产品大全</dt>
+                                        <dd>
+                                            <a href="http://www.laifeng.com/" target="_blank">来疯直播</a>
+                                            <a href="//guanghe.youku.com" target="_blank">大鱼号精选</a></dd>
+                                    </dl>
+                                    <dl>
+                                        <dt>客户端</dt>
+                                        <dd>
+                                            <a href="//mobile.youku.com/index/wireless" target="_blank">移动APP</a>
+                                            <a href="//pd.youku.com/pc" target="_blank">PC客户端</a>
+                                            <a href="http://h5.kids.youku.com/kids_youku_download/pc.html" target="_blank">小小优酷</a>
+                                            <a href="//vr.youku.com/app/download/" target="_blank">优酷VR</a>
+                                            <a href="http://www.laifeng.com/app/download" target="_blank">来疯APP</a></dd>
+                                    </dl>
+                                </div>
+                            </li>
+                        </ul>
+                </a>
+            </li>
+        </ul>
+        <!--搜索-->
+        <div class="search">
+            <div class="search-box">
+                <form id="search-form" action="//www.soku.com/search_video" method="get" target="_blank">
+                    <!--autocomplete 浏览器自动完成-->
+                    <input id="search-txt" type="text" name="keyword" autocomplete="off" oninput="search()" onfocus="search()" onblur="xiaoshi()">
+                    <!--<details id="lianxiang">-->
+                        <!--<option>1</option>-->
+                    <!--</details>-->
+                    <button id="search-button" type="submit">搜库</button>
+                </form>
+            </div>
+            <div class="search-association" >
+                <ul id="search-association"></ul>
+            </div>
+        </div>
+
+        <ul class="right">
+            <li class="li-r">
+                <a href="https://i.youku.com/i/UNjM5MzEwMzkyOA==?spm=a2h0j.11185381.uerCenter.5!6~5!2~A">
+                    <img class="img-r-h" src="{% static "tx.png" %}">
+                </a>
+            </li>
+            <li class="li-r" onmousemove="khd_over()" onmouseout="khd_out()">
+                <a href="https://pd.youku.com/?spm=a2h0j.11185381.uerCenter.5!5~5~5~A">
+                    <img class="img-r-khd" id="khd" src="{% static "khd.png" %}">
+                    <br><i class="li-img-text" id="khd-txt">客户端</i>
+                </a>
+            </li>
+            <li class="li-r" onmousemove="sc_over()" onmouseout="sc_out()">
+                <a href="http://sc.youku.com/?spm=a2h0j.11185381.uerCenter.5!4~5~5~A">
+                    <img class="img-r" id="sc" src="{% static "sc.png" %}">
+                    <br><i class="li-img-text">上传</i>
+                </a>
+            </li>
+            <li class="li-r" onmousemove="jl_over()" onmouseout="jl_out()">
+                <a href="https://faxian.youku.com/watch_record?spm=a2h0j.11185381.uerCenter.5!3~5~5~A">
+                    <img class="img-r" id="jl" src="{% static "jl.png" %}">
+                    <br><i class="li-img-text">记录</i>
+                </a>
+            </li>
+            <li class="li-r" onmousemove="dy_over()" onmouseout="dy_out()">
+                <a href="https://ding.youku.com/u/subscribeUpdate?spm=a2h0j.11185381.uerCenter.5!2~5~A">
+                    <img class="img-r" id="dy" src="{% static "dy.png" %}">
+                    <br><i class="li-img-text">订阅</i>
+                </a>
+            </li>
+            <li class="li-r" onmousemove="document.getElementById('vip').style.color='#3b9eff'" onmouseout="document.getElementById('vip').style.color='#909093'">
+                <a href="https://home.vip.youku.com/">
+                    <img class="img-r-vip" src="{% static "vip.png" %}">
+                    <br><i class="li-img-text" id="vip">VIP</i>
+                </a>
+            </li>
+        </ul>
+
+    </div>
+
+    <div class="middle">
+        <input hidden="hidden" id="xiatian" value="1">
+        <a href="http://www.miitbeian.gov.cn">粤ICP备18139679号</a>
+    </div>
+
+    <!--<div class="down">-->
+
+    <!--</div>-->
+
+
+</div>
+
+</body>
+
+
+<script>
+
+    function yuanyuan(){
+        document.getElementById("logo").src='{% static "logo2.png" %}';
+        document.getElementsByClassName("yuanyuan")[0].style.display="block";
+    }
+
+    function yuandown(){
+        document.getElementById("logo").src='{% static "logo.png" %}';
+    }
+
+    function yuanyuandown() {
+        document.getElementsByClassName("yuanyuan")[0].style.display="none";
+    }
+
+    function search() {
+
+        if (document.getElementById("search-txt").value === "") {
+            document.getElementsByClassName('search-association')[0].style.display='none';
+        }
+
+        document.getElementsByClassName("search-association")[0].style.display="block";
+        var key = document.getElementById("search-txt").value;
+        $.ajax({
+            type: "GET",
+            url: "https://www.r-share.cn/repositories/balabalamiaomiaomiao?key=" + key,
+            success: function(result) {
+                var data = result.data;
+                $("#search-association").html("");
+                for(var i = 0; i < data.length; i++) {
+                    var str = data[i];
+                    $("#search-association").html($("#search-association").html() +
+                        "<li  onclick='submit(" + '"' + str + '"' + ")'>" +
+                        "<a href='#' class='search-linsli'>" +
+                        str + "</a>" +
+                        "</li>");
+                }
+            }
+        })
+    }
+
+    $(document).mousemove(function(e) {
+        var x = e.pageX;
+        var y = e.pageY;
+        document.getElementById("xiatian").innerText = x + " " + y;
+    });
+
+    function submit(info) {
+        $("#search-txt").val(info);
+        $("#search-form").submit();
+
+        document.getElementById("search-txt").value = "";
+        document.getElementsByClassName('search-association')[0].style.display='none';
+    }
+
+    function xiaoshi() {
+
+
+        var div = $('#search-association');
+        var y1 = div.offset().top;
+        var y2 = y1 + div.height();
+        var x1 = div.offset().left;
+        var x2 = x1 + div.width();
+        z = document.getElementById("xiatian").innerText;
+        z = z.split(' ');
+        x = z[0];
+        y = z[1];
+
+        if( x < x1 || x > x2 || y < y1 || y > y2){
+            document.getElementsByClassName('search-association')[0].style.display='none';
+        }
+    }
+
+    function khd_out() {
+        document.getElementById("khd").src='{% static "khd.png" %}';
+        document.getElementById("khd-txt").style.color='#909093';
+    }
+    function khd_over() {
+        document.getElementById("khd").src='{% static "khd2.png" %}';
+        document.getElementById("khd-txt").style.color='#3b9eff';
+    }
+
+    function jl_out() {
+        document.getElementById("jl").src='{% static "jl.png" %}';
+        document.getElementById("jl-txt").style.color='#909093';
+    }
+    function jl_over() {
+        document.getElementById("jl").src='{% static "jl2.png" %}';
+        document.getElementById("jl-txt").style.color='#3b9eff';
+    }
+
+    function sc_out() {
+        document.getElementById("sc").src='{% static "sc.png" %}';
+        document.getElementById("sc-txt").style.color='#909093';
+    }
+    function sc_over() {
+        document.getElementById("sc").src='{% static "sc2.png" %}';
+        document.getElementById("sc-txt").style.color='#3b9eff';
+    }
+
+    function dy_out() {
+        document.getElementById("dy").src='{% static "dy.png" %}';
+        document.getElementById("dy-txt").style.color='#909093';
+    }
+    function dy_over() {
+        document.getElementById("dy").src='{% static "dy2.png" %}';
+        document.getElementById("dy-txt").style.color='#3b9eff';
+    }
+
+
+</script>
+</html>

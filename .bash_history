@@ -173,3 +173,39 @@ pip3
 pip3 install request
 pip3 --help
 exit
+ls
+cd root
+ls
+cd LittlePigHoHo
+ls
+python3 manage.py collectstatic 
+python3 manage.py collectstatic 
+python3 manage.py collectstatic 
+python3 manage.py collectstatic 
+python3 manage.py collectstatic 
+python3 manage.py collectstatic 
+python3 manage.py collectstatic 
+python3 manage.py collectstatic  -y
+python3 manage.py collectstatic 
+exit
+cd root
+ls
+cd LittlePigHoHo/
+ls
+python3 manage.py collectstatic
+exit
+ls
+ceca52e69d54   
+python3 /root/LittlePigHoHo/manage.py collectstatic
+cd data
+ls
+cd static
+ls
+cat index.css
+exit
+cat /var/log/HoHo_debug.log
+cat /var/log/HoHo_access.log
+exit
+ls
+cd data
+exit

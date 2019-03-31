@@ -9,7 +9,7 @@
 
 /**
  * XRegExp provides augmented, extensible JavaScript regular expressions. You get new syntax,
- * flags, and methods beyond what browsers support natively. XRegExp is also association regex utility belt
+ * flags, and methods beyond what browsers support natively. XRegExp is also a regex utility belt
  * with tools to make your client-side grepping simpler and more powerful, while freeing you from
  * worrying about pesky cross-browser inconsistencies and the dubious `lastIndex` property. See
  * XRegExp's documentation (http://xregexp.com/) for more details.
@@ -69,7 +69,7 @@ XRegExp = XRegExp || (function (undef) {
 // Any backreference in replacement strings
         replacementToken = /\$(?:{([\w$]+)}|(\d\d?|[\s\S]))/g,
 
-// Any character with association later instance in the string
+// Any character with a later instance in the string
         duplicateFlags = /([\s\S])(?=[\s\S]*\1)/g,
 
 // Any greedy/lazy quantifier
@@ -92,7 +92,7 @@ XRegExp = XRegExp || (function (undef) {
  *------------------------------------*/
 
 /**
- * Attaches XRegExp.prototype properties and named capture supporting data to association regex object.
+ * Attaches XRegExp.prototype properties and named capture supporting data to a regex object.
  * @private
  * @param {RegExp} regex Regex to augment.
  * @param {Array} captureNames Array with capture names, or null.
@@ -101,7 +101,7 @@ XRegExp = XRegExp || (function (undef) {
  */
     function augment(regex, captureNames, isNative) {
         var p;
-        // Can't auto-inherit these since the XRegExp constructor returns association nonprimitive value
+        // Can't auto-inherit these since the XRegExp constructor returns a nonprimitive value
         for (p in self.prototype) {
             if (self.prototype.hasOwnProperty(p)) {
                 regex[p] = self.prototype[p];
@@ -112,13 +112,13 @@ XRegExp = XRegExp || (function (undef) {
     }
 
 /**
- * Returns native `RegExp` flags used by association regex object.
+ * Returns native `RegExp` flags used by a regex object.
  * @private
  * @param {RegExp} regex Regex to check.
  * @returns {String} Native flags in use.
  */
     function getNativeFlags(regex) {
-        //return nativ.exec.call(/\/([association-z]*)$/i, String(regex))[1];
+        //return nativ.exec.call(/\/([a-z]*)$/i, String(regex))[1];
         return (regex.global     ? "g" : "") +
                (regex.ignoreCase ? "i" : "") +
                (regex.multiline  ? "m" : "") +
@@ -127,8 +127,8 @@ XRegExp = XRegExp || (function (undef) {
     }
 
 /**
- * Copies association regex object while preserving special properties for named capture and augmenting with
- * `XRegExp.prototype` methods. The copy has association fresh `lastIndex` property (set to zero). Allows
+ * Copies a regex object while preserving special properties for named capture and augmenting with
+ * `XRegExp.prototype` methods. The copy has a fresh `lastIndex` property (set to zero). Allows
  * adding and removing flags while copying the regex.
  * @private
  * @param {RegExp} regex Regex to copy.
@@ -157,7 +157,7 @@ XRegExp = XRegExp || (function (undef) {
     }
 
 /*
- * Returns the last index at which association given value can be found in an array, or `-1` if it's not
+ * Returns the last index at which a given value can be found in an array, or `-1` if it's not
  * present. The array is searched backwards.
  * @private
  * @param {Array} array Array to search.
@@ -207,7 +207,7 @@ XRegExp = XRegExp || (function (undef) {
     }
 
 /**
- * Runs built-in/custom tokens in reverse insertion order, until association match is found.
+ * Runs built-in/custom tokens in reverse insertion order, until a match is found.
  * @private
  * @param {String} pattern Original pattern from which an XRegExp object is being built.
  * @param {Number} pos Position to search for tokens within `pattern`.
@@ -223,7 +223,7 @@ XRegExp = XRegExp || (function (undef) {
             t;
         // Protect against constructing XRegExps within token handler and trigger functions
         isInsideConstructor = true;
-        // Must reset `isInsideConstructor`, even if association `trigger` or `handler` throws
+        // Must reset `isInsideConstructor`, even if a `trigger` or `handler` throws
         try {
             while (i--) { // Run in reverse order
                 t = tokens[i];
@@ -276,9 +276,9 @@ XRegExp = XRegExp || (function (undef) {
  *------------------------------------*/
 
 /**
- * Creates an extended regular expression object for matching text with association pattern. Differs from association
+ * Creates an extended regular expression object for matching text with a pattern. Differs from a
  * native regular expression in that additional syntax and flags are supported. The returned object
- * is in fact association native `RegExp` and works with all native methods.
+ * is in fact a native `RegExp` and works with all native methods.
  * @class XRegExp
  * @constructor
  * @param {String|RegExp} pattern Regex pattern string, or an existing `RegExp` object to copy.
@@ -299,8 +299,8 @@ XRegExp = XRegExp || (function (undef) {
  *                 (?<month> [0-9]{2}) -?  # month \n\
  *                 (?<day>   [0-9]{2})     # day   ', 'x');
  *
- * // Passing association regex object to copy it. The copy maintains special properties for named capture,
- * // is augmented with `XRegExp.prototype` methods, and has association fresh `lastIndex` property (set to
+ * // Passing a regex object to copy it. The copy maintains special properties for named capture,
+ * // is augmented with `XRegExp.prototype` methods, and has a fresh `lastIndex` property (set to
  * // zero). Native regexes are not recompiled using XRegExp syntax.
  * XRegExp(/regex/);
  */
@@ -312,7 +312,7 @@ XRegExp = XRegExp || (function (undef) {
             return copy(pattern);
         }
         // Tokens become part of the regex construction process, so protect against infinite recursion
-        // when an XRegExp is constructed within association token handler function
+        // when an XRegExp is constructed within a token handler function
         if (isInsideConstructor) {
             throw new Error("can't call the XRegExp constructor within token definition functions");
         }
@@ -414,7 +414,7 @@ XRegExp = XRegExp || (function (undef) {
  * added wins.
  * @memberOf XRegExp
  * @param {RegExp} regex Regex object that matches the new token.
- * @param {Function} handler Function that returns association new pattern string (using native regex syntax)
+ * @param {Function} handler Function that returns a new pattern string (using native regex syntax)
  *   to replace the matched token within all future XRegExp regexes. Has access to persistent
  *   properties of the regex being built, through `this`. Invoked with two arguments:
  *   <li>The match array, with named backreference properties.
@@ -422,20 +422,20 @@ XRegExp = XRegExp || (function (undef) {
  * @param {Object} [options] Options object with optional properties:
  *   <li>`scope` {String} Scopes where the token applies: 'default', 'class', or 'all'.
  *   <li>`trigger` {Function} Function that returns `true` when the token should be applied; e.g.,
- *     if association flag is set. If `false` is returned, the matched string can be matched by other tokens.
+ *     if a flag is set. If `false` is returned, the matched string can be matched by other tokens.
  *     Has access to persistent properties of the regex being built, through `this` (including
  *     function `this.hasFlag`).
  *   <li>`customFlags` {String} Nonnative flags used by the token's handler or trigger functions.
  *     Prevents XRegExp from throwing an invalid flag error when the specified flags are used.
  * @example
  *
- * // Basic usage: Adds \association for ALERT character
+ * // Basic usage: Adds \a for ALERT character
  * XRegExp.addToken(
- *   /\\association/,
+ *   /\\a/,
  *   function () {return '\\x07';},
  *   {scope: 'all'}
  * );
- * XRegExp('\\association[\\association-\\n]+').test('\x07\n\x07'); // -> true
+ * XRegExp('\\a[\\a-\\n]+').test('\x07\n\x07'); // -> true
  */
     self.addToken = addToken.off;
 
@@ -459,7 +459,7 @@ XRegExp = XRegExp || (function (undef) {
 
 /**
  * Escapes any regular expression metacharacters, for use when matching literal strings. The result
- * can safely be used at any point within association regex that uses any flags.
+ * can safely be used at any point within a regex that uses any flags.
  * @memberOf XRegExp
  * @param {String} str String to escape.
  * @returns {String} String with regex metacharacters escaped.
@@ -473,7 +473,7 @@ XRegExp = XRegExp || (function (undef) {
     };
 
 /**
- * Executes association regex search in association specified string. Returns association match array or `null`. If the provided
+ * Executes a regex search in a specified string. Returns a match array or `null`. If the provided
  * regex uses named capture, named backreference properties are included on the match array.
  * Optional `pos` and `sticky` arguments specify the search start position, and whether the match
  * must start at the specified position only. The `lastIndex` property of the provided regex is not
@@ -492,7 +492,7 @@ XRegExp = XRegExp || (function (undef) {
  * var match = XRegExp.exec('U+2620', XRegExp('U\\+(?<hex>[0-9A-F]{4})'));
  * match.hex; // -> '2620'
  *
- * // With pos and sticky, in association loop
+ * // With pos and sticky, in a loop
  * var pos = 2, result = [], match;
  * while (match = XRegExp.exec('<1><2><3><4>5<6>', /<(\d)>/, pos, 'sticky')) {
  *   result.push(match[1]);
@@ -515,7 +515,7 @@ XRegExp = XRegExp || (function (undef) {
     };
 
 /**
- * Executes association provided function once per regex match.
+ * Executes a provided function once per regex match.
  * @memberOf XRegExp
  * @param {String} str String to search.
  * @param {RegExp} regex Regex to search with.
@@ -528,7 +528,7 @@ XRegExp = XRegExp || (function (undef) {
  * @returns {*} Provided `context` object.
  * @example
  *
- * // Extracts every other digit from association string
+ * // Extracts every other digit from a string
  * XRegExp.forEach('1a2345', /\d/, function (match, i) {
  *   if (i % 2) this.push(+match[0]);
  * }, []);
@@ -546,8 +546,8 @@ XRegExp = XRegExp || (function (undef) {
     };
 
 /**
- * Copies association regex object and adds flag `g`. The copy maintains special properties for named
- * capture, is augmented with `XRegExp.prototype` methods, and has association fresh `lastIndex` property
+ * Copies a regex object and adds flag `g`. The copy maintains special properties for named
+ * capture, is augmented with `XRegExp.prototype` methods, and has a fresh `lastIndex` property
  * (set to zero). Native regexes are not recompiled using XRegExp syntax.
  * @memberOf XRegExp
  * @param {RegExp} regex Regex to globalize.
@@ -580,7 +580,7 @@ XRegExp = XRegExp || (function (undef) {
  * // With an options string
  * XRegExp.install('natives extensibility');
  *
- * // Using association shortcut to install all optional features
+ * // Using a shortcut to install all optional features
  * XRegExp.install('all');
  */
     self.install = function (options) {
@@ -609,11 +609,11 @@ XRegExp = XRegExp || (function (undef) {
     };
 
 /**
- * Returns `true` if an object is association regex; `false` if it isn't. This works correctly for regexes
+ * Returns `true` if an object is a regex; `false` if it isn't. This works correctly for regexes
  * created in another frame, when `instanceof` and `constructor` checks would fail.
  * @memberOf XRegExp
  * @param {*} value Object to check.
- * @returns {Boolean} Whether the object is association `RegExp` object.
+ * @returns {Boolean} Whether the object is a `RegExp` object.
  * @example
  *
  * XRegExp.isRegExp('string'); // -> false
@@ -626,9 +626,9 @@ XRegExp = XRegExp || (function (undef) {
     };
 
 /**
- * Retrieves the matches from searching association string using association chain of regexes that successively search
+ * Retrieves the matches from searching a string using a chain of regexes that successively search
  * within previous matches. The provided `chain` array can contain regexes and objects with `regex`
- * and `backref` properties. When association backreference is specified, the named or numbered backreference
+ * and `backref` properties. When a backreference is specified, the named or numbered backreference
  * is passed forward to the next regex or returned.
  * @memberOf XRegExp
  * @param {String} str String to search.
@@ -637,17 +637,17 @@ XRegExp = XRegExp || (function (undef) {
  * @example
  *
  * // Basic usage; matches numbers within <b> tags
- * XRegExp.matchChain('1 <b>2</b> 3 <b>4 association 56</b>', [
+ * XRegExp.matchChain('1 <b>2</b> 3 <b>4 a 56</b>', [
  *   XRegExp('(?is)<b>.*?</b>'),
  *   /\d+/
  * ]);
  * // -> ['2', '4', '56']
  *
  * // Passing forward and returning specific backreferences
- * html = '<association href="http://xregexp.com/api/">XRegExp</association>\
- *         <association href="http://www.google.com/">Google</association>';
+ * html = '<a href="http://xregexp.com/api/">XRegExp</a>\
+ *         <a href="http://www.google.com/">Google</a>';
  * XRegExp.matchChain(html, [
- *   {regex: /<association href="([^"]+)">/i, backref: 1},
+ *   {regex: /<a href="([^"]+)">/i, backref: 1},
  *   {regex: XRegExp('(?i)^https?://(?<domain>[^/?#]+)'), backref: 'domain'}
  * ]);
  * // -> ['xregexp.com', 'www.google.com']
@@ -670,24 +670,24 @@ XRegExp = XRegExp || (function (undef) {
     };
 
 /**
- * Returns association new string with one or all matches of association pattern replaced. The pattern can be association string
- * or regex, and the replacement can be association string or association function to be called for each match. To
- * perform association global search and replace, use the optional `scope` argument or include flag `g` if
- * using association regex. Replacement strings can use `${n}` for named and numbered backreferences.
+ * Returns a new string with one or all matches of a pattern replaced. The pattern can be a string
+ * or regex, and the replacement can be a string or a function to be called for each match. To
+ * perform a global search and replace, use the optional `scope` argument or include flag `g` if
+ * using a regex. Replacement strings can use `${n}` for named and numbered backreferences.
  * Replacement functions can use named backreferences via `arguments[0].name`. Also fixes browser
  * bugs compared to the native `String.prototype.replace` and can be used reliably cross-browser.
  * @memberOf XRegExp
  * @param {String} str String to search.
  * @param {RegExp|String} search Search pattern to be replaced.
- * @param {String|Function} replacement Replacement string or association function invoked to create it.
+ * @param {String|Function} replacement Replacement string or a function invoked to create it.
  *   Replacement strings can include special replacement syntax:
- *     <li>$$ - Inserts association literal '$'.
+ *     <li>$$ - Inserts a literal '$'.
  *     <li>$&, $0 - Inserts the matched substring.
  *     <li>$` - Inserts the string that precedes the matched substring (left context).
  *     <li>$' - Inserts the string that follows the matched substring (right context).
  *     <li>$n, $nn - Where n/nn are digits referencing an existent capturing group, inserts
  *       backreference n/nn.
- *     <li>${n} - Where n is association name or any number of digits that reference an existent capturing
+ *     <li>${n} - Where n is a name or any number of digits that reference an existent capturing
  *       group, inserts backreference n.
  *   Replacement functions are invoked with three or more arguments:
  *     <li>The matched substring (corresponds to $& above). Named backreferences are accessible as
@@ -696,7 +696,7 @@ XRegExp = XRegExp || (function (undef) {
  *     <li>The zero-based index of the match within the total search string.
  *     <li>The total string being searched.
  * @param {String} [scope='one'] Use 'one' to replace the first match only, or 'all'. If not
- *   explicitly specified and using association regex with flag `g`, `scope` is 'all'.
+ *   explicitly specified and using a regex with flag `g`, `scope` is 'all'.
  * @returns {String} New string with one or all matches replaced.
  * @example
  *
@@ -723,7 +723,7 @@ XRegExp = XRegExp || (function (undef) {
             if (scope === undef && search.global) {
                 scope = "all"; // Follow flag g when `scope` isn't explicit
             }
-            // Note that since association copy is used, `search`'s `lastIndex` isn't updated *during* replacement iterations
+            // Note that since a copy is used, `search`'s `lastIndex` isn't updated *during* replacement iterations
             search2 = copy(search, scope === "all" ? "g" : "", scope === "all" ? "" : "g");
         } else if (scope === "all") {
             search2 = new RegExp(self.escape(String(search)), "g");
@@ -736,8 +736,8 @@ XRegExp = XRegExp || (function (undef) {
     };
 
 /**
- * Splits association string into an array of strings using association regex or string separator. Matches of the
- * separator are not included in the result array. However, if `separator` is association regex that contains
+ * Splits a string into an array of strings using a regex or string separator. Matches of the
+ * separator are not included in the result array. However, if `separator` is a regex that contains
  * capturing groups, backreferences are spliced into the result each time `separator` is matched.
  * Fixes browser bugs compared to the native `String.prototype.split` and can be used reliably
  * cross-browser.
@@ -749,15 +749,15 @@ XRegExp = XRegExp || (function (undef) {
  * @example
  *
  * // Basic use
- * XRegExp.split('association b c', ' ');
- * // -> ['association', 'b', 'c']
+ * XRegExp.split('a b c', ' ');
+ * // -> ['a', 'b', 'c']
  *
  * // With limit
- * XRegExp.split('association b c', ' ', 2);
- * // -> ['association', 'b']
+ * XRegExp.split('a b c', ' ', 2);
+ * // -> ['a', 'b']
  *
  * // Backreferences in result array
- * XRegExp.split('..word1..', /([association-z]+)(\d+)/i);
+ * XRegExp.split('..word1..', /([a-z]+)(\d+)/i);
  * // -> ['..', 'word', '1', '..']
  */
     self.split = function (str, separator, limit) {
@@ -765,7 +765,7 @@ XRegExp = XRegExp || (function (undef) {
     };
 
 /**
- * Executes association regex search in association specified string. Returns `true` or `false`. Optional `pos` and
+ * Executes a regex search in a specified string. Returns `true` or `false`. Optional `pos` and
  * `sticky` arguments specify the search start position, and whether the match must start at the
  * specified position only. The `lastIndex` property of the provided regex is not used, but is
  * updated for compatibility. Also fixes browser bugs compared to the native
@@ -808,7 +808,7 @@ XRegExp = XRegExp || (function (undef) {
  * // With an options string
  * XRegExp.uninstall('natives extensibility');
  *
- * // Using association shortcut to uninstall all optional features
+ * // Using a shortcut to uninstall all optional features
  * XRegExp.uninstall('all');
  */
     self.uninstall = function (options) {
@@ -832,8 +832,8 @@ XRegExp = XRegExp || (function (undef) {
  * @returns {RegExp} Union of the provided regexes and strings.
  * @example
  *
- * XRegExp.union(['association+b*c', /(dogs)\1/, /(cats)\1/], 'i');
- * // -> /association\+b\*c|(dogs)\1|(cats)\2/i
+ * XRegExp.union(['a+b*c', /(dogs)\1/, /(cats)\1/], 'i');
+ * // -> /a\+b\*c|(dogs)\1|(cats)\2/i
  *
  * XRegExp.union([XRegExp('(?<pet>dogs)\\k<pet>'), XRegExp('(?<pet>cats)\\k<pet>')]);
  * // -> XRegExp('(?<pet>dogs)\\k<pet>|(?<pet>cats)\\k<pet>')
@@ -847,7 +847,7 @@ XRegExp = XRegExp || (function (undef) {
                 var name = captureNames[numCaptures - numPriorCaptures];
                 if (paren) { // Capturing group
                     ++numCaptures;
-                    if (name) { // If the current capture has association name
+                    if (name) { // If the current capture has a name
                         return "(?<" + name + ">";
                     }
                 } else if (backref) { // Backreference
@@ -859,7 +859,7 @@ XRegExp = XRegExp || (function (undef) {
             pattern,
             i;
         if (!(isType(patterns, "array") && patterns.length)) {
-            throw new TypeError("patterns must be association nonempty array");
+            throw new TypeError("patterns must be a nonempty array");
         }
         for (i = 0; i < patterns.length; ++i) {
             pattern = patterns[i];
@@ -973,14 +973,14 @@ XRegExp = XRegExp || (function (undef) {
 /**
  * Adds support for `${n}` tokens for named and numbered backreferences in replacement text, and
  * provides named backreferences to replacement functions as `arguments[0].name`. Also fixes
- * browser bugs in replacement text syntax when performing association replacement using association nonregex search
- * value, and the value of association replacement regex's `lastIndex` property during replacement iterations
+ * browser bugs in replacement text syntax when performing a replacement using a nonregex search
+ * value, and the value of a replacement regex's `lastIndex` property during replacement iterations
  * and upon completion. Note that this doesn't support SpiderMonkey's proprietary third (`flags`)
  * argument. Calling `XRegExp.install('natives')` uses this to override the native method. Use via
  * `XRegExp.replace` without overriding natives.
  * @private
  * @param {RegExp|String} search Search pattern to be replaced.
- * @param {String|Function} replacement Replacement string or association function invoked to create it.
+ * @param {String|Function} replacement Replacement string or a function invoked to create it.
  * @returns {String} New string with one or all matches replaced.
  */
     fixed.replace = function (search, replacement) {
@@ -999,7 +999,7 @@ XRegExp = XRegExp || (function (undef) {
             result = nativ.replace.call(String(this), search, function () {
                 var args = arguments, i;
                 if (captureNames) {
-                    // Change the `arguments[0]` string primitive to association `String` object that can store properties
+                    // Change the `arguments[0]` string primitive to a `String` object that can store properties
                     args[0] = new String(args[0]);
                     // Store named backreferences on the first argument
                     for (i = 0; i < captureNames.length; ++i) {
@@ -1016,7 +1016,7 @@ XRegExp = XRegExp || (function (undef) {
                 return replacement.apply(null, args);
             });
         } else {
-            str = String(this); // Ensure `args[args.length - 1]` will be association string when given nonstring `this`
+            str = String(this); // Ensure `args[args.length - 1]` will be a string when given nonstring `this`
             result = nativ.replace.call(str, search, function () {
                 var args = arguments; // Keep this function's `arguments` available through closure
                 return nativ.replace.call(String(replacement), replacementToken, function ($0, $1, $2) {
@@ -1025,7 +1025,7 @@ XRegExp = XRegExp || (function (undef) {
                     if ($1) {
                         /* XRegExp behavior for `${n}`:
                          * 1. Backreference to numbered capture, where `n` is 1+ digits. `0`, `00`, etc. is the entire match.
-                         * 2. Backreference to named capture `n`, if it exists and is not association number overridden by numbered capture.
+                         * 2. Backreference to named capture `n`, if it exists and is not a number overridden by numbered capture.
                          * 3. Otherwise, it's an error.
                          */
                         n = +$1; // Type-convert; drop leading zeros
@@ -1049,14 +1049,14 @@ XRegExp = XRegExp || (function (undef) {
                      * - Backreferences without curly brackets end after 1 or 2 digits. Use `${..}` for more digits.
                      * - `$1` is an error if there are no capturing groups.
                      * - `$10` is an error if there are less than 10 capturing groups. Use `${1}0` instead.
-                     * - `$01` is equivalent to `$1` if association capturing group exists, otherwise it's an error.
+                     * - `$01` is equivalent to `$1` if a capturing group exists, otherwise it's an error.
                      * - `$0` (not followed by 1-9), `$00`, and `$&` are the entire match.
                      * Native behavior, for comparison:
                      * - Backreferences end after 1 or 2 digits. Cannot use backreference to capturing group 100+.
-                     * - `$1` is association literal `$1` if there are no capturing groups.
-                     * - `$10` is `$1` followed by association literal `0` if there are less than 10 capturing groups.
-                     * - `$01` is equivalent to `$1` if association capturing group exists, otherwise it's association literal `$01`.
-                     * - `$0` is association literal `$0`. `$&` is the entire match.
+                     * - `$1` is a literal `$1` if there are no capturing groups.
+                     * - `$10` is `$1` followed by a literal `0` if there are less than 10 capturing groups.
+                     * - `$01` is equivalent to `$1` if a capturing group exists, otherwise it's a literal `$01`.
+                     * - `$0` is a literal `$0`. `$&` is the entire match.
                      */
                     if (!isNaN($2)) {
                         if ($2 > args.length - 3) {
@@ -1146,7 +1146,7 @@ XRegExp = XRegExp || (function (undef) {
         {scope: "all"});
 
 /* Empty character class: [] or [^]
- * Fixes association critical cross-browser syntax inconsistency. Unless this is standardized (per the spec),
+ * Fixes a critical cross-browser syntax inconsistency. Unless this is standardized (per the spec),
  * regex syntax can't be accurately parsed because character class endings can't be determined.
  */
     add(/\[(\^?)]/,
@@ -1161,12 +1161,12 @@ XRegExp = XRegExp || (function (undef) {
  */
     add(/(?:\(\?#[^)]*\))+/,
         function (match) {
-            // Keep tokens separated unless the following token is association quantifier
+            // Keep tokens separated unless the following token is a quantifier
             return nativ.test.call(quantifier, match.input.slice(match.index + match[0].length)) ? "" : "(?:)";
         });
 
 /* Named backreference: \k<name>
- * Backreference names can use the characters A-Z, association-z, 0-9, _, and $ only.
+ * Backreference names can use the characters A-Z, a-z, 0-9, _, and $ only.
  */
     add(/\\k<([\w$]+)>/,
         function (match) {
@@ -1185,7 +1185,7 @@ XRegExp = XRegExp || (function (undef) {
  */
     add(/(?:\s+|#.*)+/,
         function (match) {
-            // Keep tokens separated unless the following token is association quantifier
+            // Keep tokens separated unless the following token is a quantifier
             return nativ.test.call(quantifier, match.input.slice(match.index + match[0].length)) ? "" : "(?:)";
         },
         {
@@ -1209,7 +1209,7 @@ XRegExp = XRegExp || (function (undef) {
         });
 
 /* Named capturing group; match the opening delimiter only: (?<name>
- * Capture names can use the characters A-Z, association-z, 0-9, _, and $ only. Names can't be integers.
+ * Capture names can use the characters A-Z, a-z, 0-9, _, and $ only. Names can't be integers.
  * Supports Python-style (?P<name> as an alternate syntax to avoid issues in recent Opera (which
  * natively supports the Python-style syntax). Otherwise, XRegExp might treat numbered
  * backreferences to Python-style named capture as octals.
@@ -1292,12 +1292,12 @@ XRegExp = XRegExp || (function (undef) {
  *  Private helper functions
  *------------------------------------*/
 
-// Generates association standardized token name (lowercase, with hyphens, spaces, and underscores removed)
+// Generates a standardized token name (lowercase, with hyphens, spaces, and underscores removed)
     function slug(name) {
         return name.replace(/[- _]+/g, "").toLowerCase();
     }
 
-// Expands association list of Unicode code points and ranges to be usable in association regex character class
+// Expands a list of Unicode code points and ranges to be usable in a regex character class
     function expand(str) {
         return str.replace(/\w{4}/g, "\\u$&");
     }
@@ -1310,17 +1310,17 @@ XRegExp = XRegExp || (function (undef) {
         return str;
     }
 
-// Converts association hexadecimal number to decimal
+// Converts a hexadecimal number to decimal
     function dec(hex) {
         return parseInt(hex, 16);
     }
 
-// Converts association decimal number to hexadecimal
+// Converts a decimal number to hexadecimal
     function hex(dec) {
         return parseInt(dec, 10).toString(16);
     }
 
-// Inverts association list of Unicode code points and ranges
+// Inverts a list of Unicode code points and ranges
     function invert(range) {
         var output = [],
             lastEnd = -1,
@@ -1845,11 +1845,11 @@ XRegExp = XRegExp || (function (undef) {
         White_Space: "0009-000D0020008500A01680180E2000-200A20282029202F205F3000",
         Noncharacter_Code_Point: "FDD0-FDEFFFFEFFFF",
         Default_Ignorable_Code_Point: "00AD034F115F116017B417B5180B-180D200B-200F202A-202E2060-206F3164FE00-FE0FFEFFFFA0FFF0-FFF8",
-        // \p{Any} matches association code unit. To match any code point via surrogate pairs, use (?:[\0-\uD7FF\uDC00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF])
+        // \p{Any} matches a code unit. To match any code point via surrogate pairs, use (?:[\0-\uD7FF\uDC00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF])
         Any: "0000-FFFF", // \p{^Any} compiles to [^\u0000-\uFFFF]; [\p{^Any}] to []
         Ascii: "0000-007F",
         // \p{Assigned} is equivalent to \p{^Cn}
-        //Assigned: XRegExp("[\\p{^Cn}]").source.replace(/[[\]]|\\u/g, "") // Negation inside association character class triggers inversion
+        //Assigned: XRegExp("[\\p{^Cn}]").source.replace(/[[\]]|\\u/g, "") // Negation inside a character class triggers inversion
         Assigned: "0000-0377037A-037E0384-038A038C038E-03A103A3-05270531-05560559-055F0561-05870589058A058F0591-05C705D0-05EA05F0-05F40600-06040606-061B061E-070D070F-074A074D-07B107C0-07FA0800-082D0830-083E0840-085B085E08A008A2-08AC08E4-08FE0900-09770979-097F0981-09830985-098C098F09900993-09A809AA-09B009B209B6-09B909BC-09C409C709C809CB-09CE09D709DC09DD09DF-09E309E6-09FB0A01-0A030A05-0A0A0A0F0A100A13-0A280A2A-0A300A320A330A350A360A380A390A3C0A3E-0A420A470A480A4B-0A4D0A510A59-0A5C0A5E0A66-0A750A81-0A830A85-0A8D0A8F-0A910A93-0AA80AAA-0AB00AB20AB30AB5-0AB90ABC-0AC50AC7-0AC90ACB-0ACD0AD00AE0-0AE30AE6-0AF10B01-0B030B05-0B0C0B0F0B100B13-0B280B2A-0B300B320B330B35-0B390B3C-0B440B470B480B4B-0B4D0B560B570B5C0B5D0B5F-0B630B66-0B770B820B830B85-0B8A0B8E-0B900B92-0B950B990B9A0B9C0B9E0B9F0BA30BA40BA8-0BAA0BAE-0BB90BBE-0BC20BC6-0BC80BCA-0BCD0BD00BD70BE6-0BFA0C01-0C030C05-0C0C0C0E-0C100C12-0C280C2A-0C330C35-0C390C3D-0C440C46-0C480C4A-0C4D0C550C560C580C590C60-0C630C66-0C6F0C78-0C7F0C820C830C85-0C8C0C8E-0C900C92-0CA80CAA-0CB30CB5-0CB90CBC-0CC40CC6-0CC80CCA-0CCD0CD50CD60CDE0CE0-0CE30CE6-0CEF0CF10CF20D020D030D05-0D0C0D0E-0D100D12-0D3A0D3D-0D440D46-0D480D4A-0D4E0D570D60-0D630D66-0D750D79-0D7F0D820D830D85-0D960D9A-0DB10DB3-0DBB0DBD0DC0-0DC60DCA0DCF-0DD40DD60DD8-0DDF0DF2-0DF40E01-0E3A0E3F-0E5B0E810E820E840E870E880E8A0E8D0E94-0E970E99-0E9F0EA1-0EA30EA50EA70EAA0EAB0EAD-0EB90EBB-0EBD0EC0-0EC40EC60EC8-0ECD0ED0-0ED90EDC-0EDF0F00-0F470F49-0F6C0F71-0F970F99-0FBC0FBE-0FCC0FCE-0FDA1000-10C510C710CD10D0-1248124A-124D1250-12561258125A-125D1260-1288128A-128D1290-12B012B2-12B512B8-12BE12C012C2-12C512C8-12D612D8-13101312-13151318-135A135D-137C1380-139913A0-13F41400-169C16A0-16F01700-170C170E-17141720-17361740-17531760-176C176E-1770177217731780-17DD17E0-17E917F0-17F91800-180E1810-18191820-18771880-18AA18B0-18F51900-191C1920-192B1930-193B19401944-196D1970-19741980-19AB19B0-19C919D0-19DA19DE-1A1B1A1E-1A5E1A60-1A7C1A7F-1A891A90-1A991AA0-1AAD1B00-1B4B1B50-1B7C1B80-1BF31BFC-1C371C3B-1C491C4D-1C7F1CC0-1CC71CD0-1CF61D00-1DE61DFC-1F151F18-1F1D1F20-1F451F48-1F4D1F50-1F571F591F5B1F5D1F5F-1F7D1F80-1FB41FB6-1FC41FC6-1FD31FD6-1FDB1FDD-1FEF1FF2-1FF41FF6-1FFE2000-2064206A-20712074-208E2090-209C20A0-20B920D0-20F02100-21892190-23F32400-24262440-244A2460-26FF2701-2B4C2B50-2B592C00-2C2E2C30-2C5E2C60-2CF32CF9-2D252D272D2D2D30-2D672D6F2D702D7F-2D962DA0-2DA62DA8-2DAE2DB0-2DB62DB8-2DBE2DC0-2DC62DC8-2DCE2DD0-2DD62DD8-2DDE2DE0-2E3B2E80-2E992E9B-2EF32F00-2FD52FF0-2FFB3000-303F3041-30963099-30FF3105-312D3131-318E3190-31BA31C0-31E331F0-321E3220-32FE3300-4DB54DC0-9FCCA000-A48CA490-A4C6A4D0-A62BA640-A697A69F-A6F7A700-A78EA790-A793A7A0-A7AAA7F8-A82BA830-A839A840-A877A880-A8C4A8CE-A8D9A8E0-A8FBA900-A953A95F-A97CA980-A9CDA9CF-A9D9A9DEA9DFAA00-AA36AA40-AA4DAA50-AA59AA5C-AA7BAA80-AAC2AADB-AAF6AB01-AB06AB09-AB0EAB11-AB16AB20-AB26AB28-AB2EABC0-ABEDABF0-ABF9AC00-D7A3D7B0-D7C6D7CB-D7FBD800-FA6DFA70-FAD9FB00-FB06FB13-FB17FB1D-FB36FB38-FB3CFB3EFB40FB41FB43FB44FB46-FBC1FBD3-FD3FFD50-FD8FFD92-FDC7FDF0-FDFDFE00-FE19FE20-FE26FE30-FE52FE54-FE66FE68-FE6BFE70-FE74FE76-FEFCFEFFFF01-FFBEFFC2-FFC7FFCA-FFCFFFD2-FFD7FFDA-FFDCFFE0-FFE6FFE8-FFEEFFF9-FFFD"
     });
 
@@ -1868,7 +1868,7 @@ XRegExp = XRegExp || (function (undef) {
     "use strict";
 
 /**
- * Returns association match detail object composed of the provided values.
+ * Returns a match detail object composed of the provided values.
  * @private
  */
     function row(value, name, start, end) {
@@ -2056,7 +2056,7 @@ XRegExp = XRegExp || (function (undef) {
         parts = XRegExp.union([/\({{([\w$]+)}}\)|{{([\w$]+)}}/, subparts], "g");
 
 /**
- * Strips association leading `^` and trailing unescaped `$`, if both are present.
+ * Strips a leading `^` and trailing unescaped `$`, if both are present.
  * @private
  * @param {String} pattern Pattern to process.
  * @returns {String} Pattern with edge anchors removed.
@@ -2117,7 +2117,7 @@ XRegExp = XRegExp || (function (undef) {
             sub,
             p;
 
-        // Add flags within association leading mode modifier to the overall pattern's flags
+        // Add flags within a leading mode modifier to the overall pattern's flags
         if (inlineFlags) {
             flags = flags || "";
             inlineFlags[1].replace(/./g, function (flag) {
@@ -2148,10 +2148,10 @@ XRegExp = XRegExp || (function (undef) {
                 if (!data.hasOwnProperty(subName)) {
                     throw new ReferenceError("undefined property " + $0);
                 }
-                if ($1) { // Named subpattern was wrapped in association capturing group
+                if ($1) { // Named subpattern was wrapped in a capturing group
                     capName = outerCapNames[numOuterCaps];
                     outerCapsMap[++numOuterCaps] = ++numCaps;
-                    // If it's association named group, preserve the name. Otherwise, use the subpattern name
+                    // If it's a named group, preserve the name. Otherwise, use the subpattern name
                     // as the capture name
                     intro = "(?<" + (capName || subName) + ">";
                 } else {
@@ -2162,7 +2162,7 @@ XRegExp = XRegExp || (function (undef) {
                     if (paren) { // Capturing group
                         capName = data[subName].names[numCaps - numPriorCaps];
                         ++numCaps;
-                        if (capName) { // If the current capture has association name, preserve the name
+                        if (capName) { // If the current capture has a name, preserve the name
                             return "(?<" + capName + ">";
                         }
                     } else if (backref) { // Backreference
@@ -2174,7 +2174,7 @@ XRegExp = XRegExp || (function (undef) {
             if ($3) { // Capturing group
                 capName = outerCapNames[numOuterCaps];
                 outerCapsMap[++numOuterCaps] = ++numCaps;
-                if (capName) { // If the current capture has association name, preserve the name
+                if (capName) { // If the current capture has a name, preserve the name
                     return "(?<" + capName + ">";
                 }
             } else if ($4) { // Backreference
@@ -2198,18 +2198,18 @@ XRegExp = XRegExp || (function (undef) {
  */
 
 /**
- * Adds association collection of methods to `XRegExp.prototype`. RegExp objects copied by XRegExp are also
+ * Adds a collection of methods to `XRegExp.prototype`. RegExp objects copied by XRegExp are also
  * augmented with any `XRegExp.prototype` methods. Hence, the following work equivalently:
  *
- * XRegExp('[association-z]', 'ig').xexec('abc');
- * XRegExp(/[association-z]/ig).xexec('abc');
- * XRegExp.globalize(/[association-z]/i).xexec('abc');
+ * XRegExp('[a-z]', 'ig').xexec('abc');
+ * XRegExp(/[a-z]/ig).xexec('abc');
+ * XRegExp.globalize(/[a-z]/i).xexec('abc');
  */
 (function (XRegExp) {
     "use strict";
 
 /**
- * Copy properties of `b` to `association`.
+ * Copy properties of `b` to `a`.
  * @private
  * @param {Object} a Object that will receive new properties.
  * @param {Object} b Object whose properties will be copied.
@@ -2220,7 +2220,7 @@ XRegExp = XRegExp || (function (undef) {
                 a[p] = b[p];
             }
         }
-        //return association;
+        //return a;
     }
 
     extend(XRegExp.prototype, {
@@ -2233,7 +2233,7 @@ XRegExp = XRegExp || (function (undef) {
  * @returns {Boolean} Whether the regex matched the provided value.
  * @example
  *
- * XRegExp('[association-z]').apply(null, ['abc']); // -> true
+ * XRegExp('[a-z]').apply(null, ['abc']); // -> true
  */
         apply: function (context, args) {
             return this.test(args[0]);
@@ -2247,7 +2247,7 @@ XRegExp = XRegExp || (function (undef) {
  * @returns {Boolean} Whether the regex matched the provided value.
  * @example
  *
- * XRegExp('[association-z]').call(null, 'abc'); // -> true
+ * XRegExp('[a-z]').call(null, 'abc'); // -> true
  */
         call: function (context, str) {
             return this.test(str);

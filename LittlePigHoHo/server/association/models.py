@@ -8,6 +8,16 @@ from common.enum.account.role import RoleEnum
 from django.dispatch import receiver
 from django.db.models.signals import post_init, post_save, post_delete
 from common.core.dao.cache.model_manager import HoHoModelManager
+from common.core.dao.cache.factory import bind_model_cached_manager_signal
+from common.core.dao.cache.factory import delete_model_single_object_cache
+from django.dispatch import receiver
+from django.db.models.signals import post_save, post_delete
+from common.entity.association.permissions import AssociationPermissionsEntity
+from common.entity.association.backlog import AssociationBacklog
+from common.entity.association.config import AssociationConfigureEntity
+
+from common.core.dao.time_stamp import TimeStampField
+
 
 # 协会表
 class Association(models.Model):
@@ -31,8 +41,11 @@ class Association(models.Model):
     # 协会简介
     description = models.CharField(max_length=255, default="", blank=True)
 
+    # 代办事项
+    backlog = models.TextField(default=AssociationBacklog().dumps())
+
     # 协会配置信息(评优配置数据)
-    config = models.TextField(default='{}')
+    config = models.TextField(default=AssociationConfigureEntity().dumps())
 
     # 是否集群（有无部门）模式
     colony = models.BooleanField(default=False)
@@ -43,6 +56,11 @@ class Association(models.Model):
     # 协会码
     choosing_code = models.CharField(default='', max_length=15, blank=True)
 
+    # 创建时间
+    create_time = TimeStampField(auto_now_add=True)
+
+    # 最后更新时间
+    update_time = TimeStampField(auto_now=True)
     # 重构管理器
     objects = HoHoModelManager()
 
@@ -75,6 +93,12 @@ class AssociationDepartment(models.Model):
     manager = models.ManyToManyField('account.Account', blank=True,
                                                   related_name='department_manager')
 
+    # 创建时间
+    create_time = TimeStampField(auto_now_add=True)
+
+    # 最后更新时间
+    update_time = TimeStampField(auto_now=True)
+
     # 重构管理器
     objects = HoHoModelManager()
 
@@ -88,11 +112,11 @@ class AssociationAccount(models.Model):
         verbose_name_plural = "协会人事表"
         app_label = 'association'
 
+    # 协会内名称
+    nickname = models.CharField(max_length=50, default="")
+
     # 关联用户
     account = models.ForeignKey('account.Account', on_delete=models.CASCADE)
-
-    # 协会内名称
-    nickname = models.CharField(max_length=50)
 
     # 关联协会
     association = models.ForeignKey('association.Association', on_delete=models.CASCADE)
@@ -103,14 +127,23 @@ class AssociationAccount(models.Model):
     # 用户角色
     role = models.PositiveSmallIntegerField(**RoleEnum.get_models_params())
 
+    # 权限
+    permissions = models.TextField(default=AssociationPermissionsEntity().dumps())
+
     # 退休换届与否
     retire = models.BooleanField(default=False)
+
+    # 创建时间
+    create_time = TimeStampField(auto_now_add=True)
+
+    # 最后更新时间
+    update_time = TimeStampField(auto_now=True)
 
     # 重构管理器
     objects = HoHoModelManager()
 
     def __str__(self):
-        return "[%d] %s-%s %s" % (self.id, self.association.name, self.department.name, self.account.realname)
+        return "[%d] %s %s" % (self.id, self.role, self.nickname)
 
 
 class AssociationAttendance(models.Model):
@@ -131,8 +164,11 @@ class AssociationAttendance(models.Model):
     # 描述
     description = models.TextField(default="", blank=True)
 
-    # 考勤地点(经纬度，到时候按照前端反馈信息再做调整)
-    place = models.CharField(max_length=64, default="", blank=True)
+    # 考勤地点(纬度)
+    place_x = models.FloatField(default=0.0)
+
+    # 考勤地点(经度)
+    place_y = models.FloatField(default=0.0)
 
     # 容错距离(半径m)
     distance = models.FloatField(default=50.0)
@@ -144,17 +180,28 @@ class AssociationAttendance(models.Model):
     end_time = models.FloatField(default=0.0)
 
     # 创建时间
-    create_time = models.DateTimeField(auto_now_add=True)
+    create_time = TimeStampField(auto_now_add=True)
 
     # 最后更新时间
-    update_time = models.DateTimeField(auto_now=True)
-
-    # 管理员
-    manager = models.ManyToManyField('association.AssociationAccount',
-                                     blank=True, related_name='attendance_manager')
+    update_time = TimeStampField(auto_now=True)
 
     # 重构管理器
     objects = HoHoModelManager()
 
     def __str__(self):
         return "[%s] 标题:%s, 归属协会%s" % (self.id, self.title, self.association.name)
+
+
+receiver(post_save, sender=AssociationAttendance)(delete_model_single_object_cache)
+receiver(post_delete, sender=AssociationAttendance)(delete_model_single_object_cache)
+
+receiver(post_save, sender=Association)(delete_model_single_object_cache)
+receiver(post_delete, sender=Association)(delete_model_single_object_cache)
+
+receiver(post_save, sender=AssociationDepartment)(delete_model_single_object_cache)
+receiver(post_delete, sender=AssociationDepartment)(delete_model_single_object_cache)
+
+receiver(post_save, sender=AssociationAccount)(delete_model_single_object_cache)
+receiver(post_delete, sender=AssociationAccount)(delete_model_single_object_cache)
+
+

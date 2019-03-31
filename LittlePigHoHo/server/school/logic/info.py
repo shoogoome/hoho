@@ -1,6 +1,7 @@
 from ..models import School
 from common.exceptions.school.info import SchoolInfoException
 from common.exceptions.scheduling.curriculum import CurriculumExcept
+from server.association.models import Association
 
 
 class SchoolLogic(object):
@@ -24,7 +25,7 @@ class SchoolLogic(object):
         :param thown:
         :return:
         """
-        schools = School.objects.get_once(id=sid)
+        schools = School.objects.get_once(pk=sid)
         if schools is None and thown:
             raise SchoolInfoException.school_not_found()
         return schools
@@ -34,7 +35,7 @@ class SchoolLogic(object):
         获取协会列表
         :return:
         """
-        return self.school.association_set.all()
+        return Association.objects.filter_cache(school=self.school)
 
     def get_curriculum(self):
         """

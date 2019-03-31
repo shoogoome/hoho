@@ -25,7 +25,7 @@
                 node = cache[i];
                 if (node.displayed) {
                     var new_option = new Option(node.text, node.value, false, false);
-                    // Shows association tooltip when hovering over the option
+                    // Shows a tooltip when hovering over the option
                     new_option.setAttribute("title", node.text);
                     new_options += new_option.outerHTML;
                 }

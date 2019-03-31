@@ -14,3 +14,15 @@ class AssociationExcept(HoHoExceptBase):
     @classmethod
     def code_error(cls):
         return cls("协会码错误")
+
+    @classmethod
+    def not_account(cls):
+        return cls("查无此账号")
+
+    @classmethod
+    def joined_association(cls):
+        return cls("已加入该协会")
+
+    @classmethod
+    def department_not_exist(cls):
+        return cls("该部门非协会内部部门")

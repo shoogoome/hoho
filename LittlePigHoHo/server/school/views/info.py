@@ -12,7 +12,8 @@ from server.account.logic.info import AccountLogic
 from ..logic.info import SchoolLogic
 from common.exceptions.school.info import SchoolInfoException
 from ..models import School
-
+from common.utils.helper.pagination import slicer
+from django.db.models import Q
 
 class SchoolView(HoHoView):
     NORMAL_FIELDS = [
@@ -37,8 +38,9 @@ class SchoolView(HoHoView):
         :param sid:
         :return:
         """
-        if self.auth.get_account().role != int(RoleEnum.ADMIN):
-            raise SchoolInfoException.no_permission()
+        # 权限检查 暂时关闭
+        # if self.auth.get_account().role != int(RoleEnum.ADMIN):
+        #     raise SchoolInfoException.no_permission()
         params = ParamsParser(request.JSON)
 
         school = School.objects.create(
@@ -59,8 +61,10 @@ class SchoolView(HoHoView):
         :param sid:
         :return:
         """
-        if self.auth.get_account().role != int(RoleEnum.ADMIN):
-            raise SchoolInfoException.no_permission()
+
+        # 权限检查暂时关闭
+        # if self.auth.get_account().role != int(RoleEnum.ADMIN):
+        #     raise SchoolInfoException.no_permission()
         params = ParamsParser(request.JSON)
         logic = SchoolLogic(self.auth, sid)
 
@@ -97,20 +101,37 @@ class SchoolView(HoHoView):
 
 class SchoolList(HoHoView):
 
-    NORMAL_FIELDS = [
-        'id', 'name', 'short_name',
-    ]
 
     def get(self, request):
         """
         获取学校列表
         :return:
         """
-        school = School.objects.all()
+        params = ParamsParser(request.GET)
 
-        data = [model_to_dict(sc, self.NORMAL_FIELDS) for sc in school]
+        limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
+        page = params.int('page', desc='当前页数', require=False, default=1)
 
-        return Result(data)
+        schools = School.objects.values(
+            'id', 'update_time').all()
+
+        if params.has('key'):
+            key = params.str('key', desc='关键字 名称 缩写')
+            schools = schools.filter(
+                Q(name__contains=key) |
+                Q(short_name__contains=key)
+            )
+
+        @slicer(
+            schools,
+            limit=limit,
+            page=page
+        )
+        def get_school_list(obj):
+            return obj
+
+        schools, pagination = get_school_list()
+        return Result(schools=schools, pagination=pagination)
 
 
 

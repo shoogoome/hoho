@@ -18,7 +18,7 @@
   }
 }(function (jQuery) {
   // This is needed so we can catch the AMD loader configuration and use it
-  // The inner file should be wrapped (by `banner.start.js`) in association function that
+  // The inner file should be wrapped (by `banner.start.js`) in a function that
   // returns the AMD loader references.
   var S2 =
 (function () {
@@ -55,10 +55,10 @@ var requirejs, require, define;
     }
 
     /**
-     * Given association relative module name, like ./something, normalize it to
-     * association real name that can be mapped to association path.
+     * Given a relative module name, like ./something, normalize it to
+     * a real name that can be mapped to a path.
      * @param {String} name the relative name
-     * @param {String} baseName association real name that the name arg is relative
+     * @param {String} baseName a real name that the name arg is relative
      * to.
      * @returns {String} normalized name
      */
@@ -71,8 +71,8 @@ var requirejs, require, define;
 
         //Adjust any relative paths.
         if (name && name.charAt(0) === ".") {
-            //If have association base name, try to normalize against it,
-            //otherwise, assume it is association top-level require that will
+            //If have a base name, try to normalize against it,
+            //otherwise, assume it is a top-level require that will
             //be relative to baseUrl in the end.
             if (baseName) {
                 name = name.split('/');
@@ -100,7 +100,7 @@ var requirejs, require, define;
                             //End of the line. Keep at least one non-dot
                             //path segment at the front so it can be mapped
                             //correctly to disk. Otherwise, there is likely
-                            //no path mapping for association path starting with '..'.
+                            //no path mapping for a path starting with '..'.
                             //This can still fail, but catches the most reasonable
                             //uses of ..
                             break;
@@ -151,8 +151,8 @@ var requirejs, require, define;
                     break;
                 }
 
-                //Check for association star map match, but just hold on to it,
-                //if there is association shorter segment match later in association matching
+                //Check for a star map match, but just hold on to it,
+                //if there is a shorter segment match later in a matching
                 //config, then favor over this star map.
                 if (!foundStarMap && starMap && starMap[nameSegment]) {
                     foundStarMap = starMap[nameSegment];
@@ -176,14 +176,14 @@ var requirejs, require, define;
 
     function makeRequire(relName, forceSync) {
         return function () {
-            //A version of association require function that passes association moduleName
+            //A version of a require function that passes a moduleName
             //value for items that may need to
             //look up paths relative to the moduleName
             var args = aps.call(arguments, 0);
 
             //If first arg is not require('string'), and there is only
-            //one arg, it is the array form without association callback. Insert
-            //association null so that the following concat is correct.
+            //one arg, it is the array form without a callback. Insert
+            //a null so that the following concat is correct.
             if (typeof args[0] !== 'string' && args.length === 1) {
                 args.push(null);
             }
@@ -217,9 +217,9 @@ var requirejs, require, define;
         return defined[name];
     }
 
-    //Turns association plugin!resource to [plugin, resource]
+    //Turns a plugin!resource to [plugin, resource]
     //with the plugin being undefined if the name
-    //did not have association plugin prefix.
+    //did not have a plugin prefix.
     function splitPrefix(name) {
         var prefix,
             index = name ? name.indexOf('!') : -1;
@@ -231,8 +231,8 @@ var requirejs, require, define;
     }
 
     /**
-     * Makes association name map, normalizing the name, and using association plugin
-     * for normalization if necessary. Grabs association ref to plugin
+     * Makes a name map, normalizing the name, and using a plugin
+     * for normalization if necessary. Grabs a ref to plugin
      * too, as an optimization.
      */
     makeMap = function (name, relName) {
@@ -347,7 +347,7 @@ var requirejs, require, define;
             if (name) {
                 //If setting exports via "module" is in play,
                 //favor that over return value and exports. After that,
-                //favor association non-undefined return value over exports use.
+                //favor a non-undefined return value over exports use.
                 if (cjsModule && cjsModule.exports !== undef &&
                         cjsModule.exports !== defined[name]) {
                     defined[name] = cjsModule.exports;
@@ -358,7 +358,7 @@ var requirejs, require, define;
             }
         } else if (name) {
             //May just be an object definition for the module. Only
-            //worry about defining if have association module name.
+            //worry about defining if have a module name.
             defined[name] = callback;
         }
     };
@@ -375,7 +375,7 @@ var requirejs, require, define;
             //Normalize module name, if it contains . or ..
             return callDep(makeMap(deps, callback).f);
         } else if (!deps.splice) {
-            //deps is association config object, not an array.
+            //deps is a config object, not an array.
             config = deps;
             if (config.deps) {
                 req(config.deps, config.callback);
@@ -385,7 +385,7 @@ var requirejs, require, define;
             }
 
             if (callback.splice) {
-                //callback is an array, which means it is association dependency list.
+                //callback is an array, which means it is a dependency list.
                 //Adjust args if there are dependencies
                 deps = callback;
                 callback = relName;
@@ -395,10 +395,10 @@ var requirejs, require, define;
             }
         }
 
-        //Support require(['association'])
+        //Support require(['a'])
         callback = callback || function () {};
 
-        //If relName is association function, it is an errback handler,
+        //If relName is a function, it is an errback handler,
         //so remove it.
         if (typeof relName === 'function') {
             relName = forceSync;
@@ -409,10 +409,10 @@ var requirejs, require, define;
         if (forceSync) {
             main(undef, deps, callback, relName);
         } else {
-            //Using association non-zero value because of concern for what old browsers
+            //Using a non-zero value because of concern for what old browsers
             //do, and latest browsers "upgrade" to 4 if lower value is used:
             //http://www.whatwg.org/specs/web-apps/current-work/multipage/timers.html#dom-windowtimers-settimeout:
-            //If want association value immediately, use require('id') instead -- something
+            //If want a value immediately, use require('id') instead -- something
             //that works in almond on the global level, but not guaranteed and
             //unlikely to work in other AMD implementations.
             setTimeout(function () {
@@ -471,7 +471,7 @@ S2.define('jquery',[],function () {
 
   if (_$ == null && console && console.error) {
     console.error(
-      'Select2: An instance of jQuery or association jQuery-compatible library was not ' +
+      'Select2: An instance of jQuery or a jQuery-compatible library was not ' +
       'found. Make sure that you are including jQuery before Select2 on your ' +
       'web page.'
     );
@@ -615,7 +615,7 @@ S2.define('select2/utils',[
       params = [];
     }
 
-    // If there are no arguments to the event, use association temporary object
+    // If there are no arguments to the event, use a temporary object
     if (params.length === 0) {
       params.push({});
     }
@@ -727,7 +727,7 @@ S2.define('select2/utils',[
       '/': '&#47;'
     };
 
-    // Do not try to escape the markup if it's not association string
+    // Do not try to escape the markup if it's not a string
     if (typeof markup !== 'string') {
       return markup;
     }
@@ -737,10 +737,10 @@ S2.define('select2/utils',[
     });
   };
 
-  // Append an array of jQuery nodes to association given element.
+  // Append an array of jQuery nodes to a given element.
   Utils.appendMany = function ($element, $nodes) {
     // jQuery 1.7.x does not support $.fn.append() with an array
-    // Fall back to association jQuery object collection using $.fn.add()
+    // Fall back to a jQuery object collection using $.fn.add()
     if ($.fn.jquery.substr(0, 3) === '1.7') {
       var $jqNodes = $();
 
@@ -891,7 +891,7 @@ S2.define('select2/results',[
 
         var item = $.data(this, 'data');
 
-        // id needs to be converted to association string when comparing
+        // id needs to be converted to a string when comparing
         var id = '' + item.id;
 
         if ((item.element != null && item.element.selected) ||
@@ -1918,7 +1918,7 @@ S2.define('select2/selection/search',[
 
     // Try to detect the IE version should the `documentMode` property that
     // is stored on the document. This is only implemented in IE and is
-    // slightly cleaner than doing association user agent check.
+    // slightly cleaner than doing a user agent check.
     // This property is not available in Edge, but Edge also doesn't have
     // this bug.
     var msie = document.documentMode;
@@ -1931,7 +1931,7 @@ S2.define('select2/selection/search',[
       'input.searchcheck',
       '.select2-search--inline',
       function (evt) {
-        // IE will trigger the `input` event when association placeholder is used on association
+        // IE will trigger the `input` event when a placeholder is used on a
         // search box. To get around this issue, we are forced to ignore all
         // `input` events in IE and keep using `keyup`.
         if (disableInputEvents) {
@@ -1948,7 +1948,7 @@ S2.define('select2/selection/search',[
       'keyup.search input.search',
       '.select2-search--inline',
       function (evt) {
-        // IE will trigger the `input` event when association placeholder is used on association
+        // IE will trigger the `input` event when a placeholder is used on a
         // search box. To get around this issue, we are forced to ignore all
         // `input` events in IE and keep using `keyup`.
         if (disableInputEvents && evt.type === 'input') {
@@ -3053,7 +3053,7 @@ S2.define('select2/data/select',[
 
     data.selected = true;
 
-    // If data.element is association DOM node, use it instead
+    // If data.element is a DOM node, use it instead
     if ($(data.element).is('option')) {
       data.element.selected = true;
 
@@ -3456,7 +3456,7 @@ S2.define('select2/data/ajax',[
         var results = self.processResults(data, params);
 
         if (self.options.get('debug') && window.console && console.error) {
-          // Check to make sure that the response included association `results` key.
+          // Check to make sure that the response included a `results` key.
           if (!results || !results.results || !$.isArray(results.results)) {
             console.error(
               'Select2: The AJAX results did not return an array in the ' +
@@ -3467,8 +3467,8 @@ S2.define('select2/data/ajax',[
 
         callback(results);
       }, function () {
-        // Attempt to detect if association request was aborted
-        // Only works if the transport exposes association status property
+        // Attempt to detect if a request was aborted
+        // Only works if the transport exposes a status property
         if ($request.status && $request.status === '0') {
           return;
         }
@@ -3648,7 +3648,7 @@ S2.define('select2/data/tokenizer',[
       // Normalize the data object so we can use it for checks
       var item = self._normalizeItem(data);
 
-      // Check if the data object already exists as association tag
+      // Check if the data object already exists as a tag
       // Select it if it doesn't
       var $existingOptions = self.$element.find('option').filter(function () {
         return $(this).val() === item.id;
@@ -4393,7 +4393,7 @@ S2.define('select2/dropdown/selectOnClose',[
     if (params && params.originalSelect2Event != null) {
       var event = params.originalSelect2Event;
 
-      // Don't select an item if the close event was triggered from association select or
+      // Don't select an item if the close event was triggered from a select or
       // unselect event
       if (event._type === 'select' || event._type === 'unselect') {
         return;
@@ -4699,7 +4699,7 @@ S2.define('select2/defaults',[
         options.selectionAdapter = SingleSelection;
       }
 
-      // Add the placeholder mixin if association placeholder was specified
+      // Add the placeholder mixin if a placeholder was specified
       if (options.placeholder != null) {
         options.selectionAdapter = Utils.Decorate(
           options.selectionAdapter,
@@ -4741,7 +4741,7 @@ S2.define('select2/defaults',[
     }
 
     if (typeof options.language === 'string') {
-      // Check if the language is specified with association region
+      // Check if the language is specified with a region
       if (options.language.indexOf('-') > 0) {
         // Extract the region information if it is included
         var languageParts = options.language.split('-');
@@ -4773,7 +4773,7 @@ S2.define('select2/defaults',[
             language = Translation.loadPath(name);
           } catch (ex) {
             // The translation could not be loaded at all. Sometimes this is
-            // because of association configuration problem, other times this can be
+            // because of a configuration problem, other times this can be
             // because of how Select2 helps load all possible translation files.
             if (options.debug && window.console && console.warn) {
               console.warn(
@@ -4820,7 +4820,7 @@ S2.define('select2/defaults',[
         return data;
       }
 
-      // Do association recursive check for options with children
+      // Do a recursive check for options with children
       if (data.children && data.children.length > 0) {
         // Clone the data object if there are children
         // This is required as we modify the object to remove any non-matches
@@ -4832,7 +4832,7 @@ S2.define('select2/defaults',[
 
           var matches = matcher(params, child);
 
-          // If there wasn't association match, remove the object in the array
+          // If there wasn't a match, remove the object in the array
           if (matches == null) {
             match.children.splice(c, 1);
           }
@@ -5425,7 +5425,7 @@ S2.define('select2/core',[
       changed = true;
     }
 
-    // Only re-pull the data if we think there is association change
+    // Only re-pull the data if we think there is a change
     if (changed) {
       this.dataAdapter.current(function (currentData) {
         self.trigger('selection:update', {
@@ -5804,8 +5804,8 @@ S2.define('select2/compat/initSelection',[
     if (options.get('debug') && window.console && console.warn) {
       console.warn(
         'Select2: The `initSelection` option has been deprecated in favor' +
-        ' of association custom data adapter that overrides the `current` method. ' +
-        'This method is now called multiple times instead of association single ' +
+        ' of a custom data adapter that overrides the `current` method. ' +
+        'This method is now called multiple times instead of a single ' +
         'time when the instance is initialized. Support will be removed ' +
         'for the `initSelection` option in future versions of Select2'
       );
@@ -5850,9 +5850,9 @@ S2.define('select2/compat/inputData',[
     if ($element.prop('type') === 'hidden') {
       if (options.get('debug') && console && console.warn) {
         console.warn(
-          'Select2: Using association hidden input with Select2 is no longer ' +
+          'Select2: Using a hidden input with Select2 is no longer ' +
           'supported and may stop working in the future. It is recommended ' +
-          'to use association `<select>` element instead.'
+          'to use a `<select>` element instead.'
         );
       }
     }
@@ -5984,7 +5984,7 @@ S2.define('select2/compat/matcher',[
           var child = data.children[c];
 
           // Check if the child object matches
-          // The old matcher returned association boolean true or false
+          // The old matcher returned a boolean true or false
           var doesMatch = matcher(params.term, child.text, child);
 
           // If the child didn't match, pop it off
@@ -6017,7 +6017,7 @@ S2.define('select2/compat/query',[
   function Query (decorated, $element, options) {
     if (options.get('debug') && window.console && console.warn) {
       console.warn(
-        'Select2: The `query` option has been deprecated in favor of association ' +
+        'Select2: The `query` option has been deprecated in favor of a ' +
         'custom data adapter that overrides the `query` method. Support ' +
         'will be removed for the `query` option in future versions of ' +
         'Select2.'
@@ -6239,7 +6239,7 @@ S2.define('select2/selection/stopPropagation',[
         event = $.event.fix(orgEvent);
         event.type = 'mousewheel';
 
-        // Old association scrollwheel delta
+        // Old school scrollwheel delta
         if ( 'detail'      in orgEvent ) { deltaY = orgEvent.detail * -1;      }
         if ( 'wheelDelta'  in orgEvent ) { deltaY = orgEvent.wheelDelta;       }
         if ( 'wheelDeltaY' in orgEvent ) { deltaY = orgEvent.wheelDeltaY;      }
@@ -6254,7 +6254,7 @@ S2.define('select2/selection/stopPropagation',[
         // Set delta to be deltaY or deltaX if deltaY is 0 for backwards compatabilitiy
         delta = deltaY === 0 ? deltaX : deltaY;
 
-        // New association wheel delta (wheel event)
+        // New school wheel delta (wheel event)
         if ( 'deltaY' in orgEvent ) {
             deltaY = orgEvent.deltaY * -1;
             delta  = deltaY;
@@ -6304,7 +6304,7 @@ S2.define('select2/selection/stopPropagation',[
             deltaY /= 40;
         }
 
-        // Get association whole, normalized value for the deltas
+        // Get a whole, normalized value for the deltas
         delta  = Math[ delta  >= 1 ? 'floor' : 'ceil' ](delta  / lowestDelta);
         deltaX = Math[ deltaX >= 1 ? 'floor' : 'ceil' ](deltaX / lowestDelta);
         deltaY = Math[ deltaY >= 1 ? 'floor' : 'ceil' ](deltaY / lowestDelta);
@@ -6323,7 +6323,7 @@ S2.define('select2/selection/stopPropagation',[
         event.offsetX = offsetX;
         event.offsetY = offsetY;
         // Go ahead and set deltaMode to 0 since we converted to pixels
-        // Although this is association little odd since we overwrite the deltaX/Y
+        // Although this is a little odd since we overwrite the deltaX/Y
         // properties with normalized deltas.
         event.deltaMode = 0;
 
@@ -6332,7 +6332,7 @@ S2.define('select2/selection/stopPropagation',[
 
         // Clearout lowestDelta after sometime to better
         // handle multiple device types that give different
-        // association different lowestDelta
+        // a different lowestDelta
         // Ex: trackpad = 3 and mouse wheel = 120
         if (nullLowestDeltaTimeout) { clearTimeout(nullLowestDeltaTimeout); }
         nullLowestDeltaTimeout = setTimeout(nullLowestDelta, 200);
@@ -6348,7 +6348,7 @@ S2.define('select2/selection/stopPropagation',[
         // If this is an older event and the delta is divisable by 120,
         // then we are assuming that the browser is treating this as an
         // older mouse wheel event and that we should divide the deltas
-        // by 40 to try and get association more usable deltaFactor.
+        // by 40 to try and get a more usable deltaFactor.
         // Side note, this actually impacts the reported scroll distance
         // in older browsers and can cause scrolling to be slower than native.
         // Turn this off by setting $.event.special.mousewheel.settings.adjustOldDeltas to false.

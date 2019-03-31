@@ -22,10 +22,26 @@ services:
 
   redis:
     image: redis:4.0
-    container_name: HoHo-redis
+    container_name: HoHo-redis-primary
     volumes:
       - ./redis:/data
-      - ./redis/redis.conf:/etc/redis/redis.conf
+      - ./images/redis/redis.conf:/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    command: redis-server /etc/redis/redis.conf
+
+  redis-secondary:
+    image: redis:4.0
+    container_name: HoHo-redis-secondary
+    depends_on: 
+      - redis
+    links:
+      - redis:redis
+    volumes:
+      - ./redis-secondary:/data
+      - ./images/redis-secondary/redis-secondary.conf:/etc/redis/redis.conf
+    ports:
+      - "6380:6378"
     command: redis-server /etc/redis/redis.conf
 
   server:
@@ -35,9 +51,11 @@ services:
     depends_on: 
       - mariadb
       - redis
+      - redis-secondary
     links:
       - mariadb:mysqldb
       - redis:redis
+      - redis-secondary:redis-secondary
     volumes: 
       - .:/root
 
@@ -52,7 +70,6 @@ services:
       - pma:pma
     ports: 
       - "80:80"
-      - "443:443"
     volumes: 
-      - ./images/web:/etc/nginx/conf.d
+      - ./nginx-dev:/etc/nginx/conf.d
     

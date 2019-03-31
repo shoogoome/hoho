@@ -6,43 +6,44 @@
 # from common.utils.helper.result import Result
 # from common.utils.helper.upload import *
 # from server.association.models import Association
-# from server.repository.models import PhotoModel
+# from server.repository.models import RepositoryFile
+# from common.core.auth.check_login import check_login
 #
 # PHOTO_PATH = './data/repository/photo/'
 #
 #
 # class PhotoView(HoHoView):
 #
-#     def get(self, request, tid):
+#     @check_login
+#     def get(self, request):
 #         """
-#         获取照片列表
+#         获取文件列表
 #         :param request:
-#         :param tid:
 #         :return:
 #         """
-#         photo = PhotoModel.objects.filter(association_id=tid)
-#         alist = ['http://39.108.229.132/repository/photo/' + str(p.id) for p in photo]
+#         files = RepositoryFile.objects.filter__cache(author=self.auth.get_account())
+#         alist = [{
+#             "title": file.title,
+#             "id": file.id
+#         } for file in files]
 #
-#         return Result(ids=alist)
+#         return Result(alist)
 #
 #     @check_login
 #     def post(self, request, tid=''):
 #         """
-#         上传照片
+#         上传文件
 #         :param request:
 #         :param tid:
 #         :return:
 #         """
-#         file = request.FILES.get('image', None)
-#         ass = Association.objects.filter(id=tid)
-#         if not ass.exists():
-#             raise Exception("gun!")
-#         ass = ass[0]
+#         file = request.FILES.get('file', None)
 #
-#         path = upload(file, REPOSITORY_IMAGE)
-#         PhotoModel.objects.create(
+#         title, path = upload(file, REPOSITORY_IMAGE)
+#         RepositoryFile.objects.create(
 #             association=ass,
 #             photo_path=path,
+#             title=title
 #         )
 #
 #         return Result(status=file.name)

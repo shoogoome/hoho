@@ -59,6 +59,7 @@ DATABASES = {
 # ##################
 __config_redis = __ho_config.get('redis', {})
 
+# 主redis数据库
 REDIS_CONFIG_HOST = __config_redis.get('host', '127.0.0.1')
 REDIS_CONFIG_PASSWORD = __config_redis.get('password', '')
 REDIS_CONFIG_PORT = __config_redis.get('port', 6379)
@@ -74,6 +75,7 @@ CACHES = {
             __config_redis.get('host', '127.0.0.1'),
             __config_redis.get('port', 6379)
         ),
+
         'OPTIONS': {
             'DB': 2,
             'PASSWORD': __config_redis.get('password', ''),
@@ -105,6 +107,7 @@ INSTALLED_APPS = [
     'server.repository',
     'server.task',
     'server.homepage',
+    'server.notice'
 ]
 
 MIDDLEWARE = [
@@ -138,6 +141,11 @@ TEMPLATES = [
         },
     },
 ]
+
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, "common_static"),
+#     'server/homepage/static',  # 用不到的时候可以不写这一行
+# )
 
 WSGI_APPLICATION = 'LittlePigHoHo.wsgi.application'
 

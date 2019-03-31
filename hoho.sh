@@ -23,4 +23,12 @@ case $1 in
     ;;
     "logs")
     docker-compose logs --tail=10 -f
+    ;;
+    "update")
+    zip -r hoho.zip LittlePigHoHo
+    scp hoho.zip root@39.108.229.132:/root/hoho
+    rm -rf hoho.zip
+    ;;
+    "collect")
+    docker-compose exec server python3 /root/LittlePigHoHo/manage.py collectstatic
 esac

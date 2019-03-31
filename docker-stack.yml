@@ -42,9 +42,22 @@ services:
       - ./redis:/data
     networks:
       - server-net
+    ports:
+      - "6379:6379"
+
+  redis-secondary:
+    image: hoho-redis-secondary
+    depends_on:
+      - redis
+    volumes:
+      - ./redis-secondary:/data
+    networks:
+      - server-net
     deploy:
       mode: replicated
       replicas: 2
+    ports:
+      - "6380:6378"
 
   server:
     image: hoho-server

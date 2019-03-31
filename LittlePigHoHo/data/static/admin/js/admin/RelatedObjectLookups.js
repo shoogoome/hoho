@@ -7,7 +7,7 @@
 
     // IE doesn't accept periods or dashes in the window name, but the element IDs
     // we use to generate popup window names may contain them, therefore we map them
-    // to allowed characters in association reversible way so that we can locate the correct
+    // to allowed characters in a reversible way so that we can locate the correct
     // element when the popup window is dismissed.
     function id_to_windowname(text) {
         text = text.replace(/\./g, '__dot__');
@@ -87,7 +87,7 @@
                     elem.value = newId;
                 }
             }
-            // Trigger association change event to update related links if required.
+            // Trigger a change event to update related links if required.
             $(elem).trigger('change');
         } else {
             var toId = name + "_to";
@@ -109,7 +109,7 @@
             }
         });
         selects.next().find('.select2-selection__rendered').each(function() {
-            // The element can have association clear button as association child.
+            // The element can have a clear button as a child.
             // Use the lastChild to modify only the displayed value.
             this.lastChild.textContent = newRepr;
             this.title = newRepr;
@@ -146,7 +146,7 @@
     window.dismissAddAnotherPopup = dismissAddRelatedObjectPopup;
 
     $(document).ready(function() {
-        $("association[data-popup-opener]").on('click', function(event) {
+        $("a[data-popup-opener]").on('click', function(event) {
             event.preventDefault();
             opener.dismissRelatedLookupPopup(window, $(this).data("popup-opener"));
         });

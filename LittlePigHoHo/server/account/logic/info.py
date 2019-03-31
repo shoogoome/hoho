@@ -4,15 +4,21 @@ from common.enum.account.permission import AccountPermissionEnum
 from common.enum.account.role import RoleEnum
 from common.exceptions.account.info import AccountInfoExcept
 from server.account.models import Account
+from common.utils.helper.m_t_d import model_to_dict
 
 
 class AccountLogic(object):
+
+    NORMAL_FILES = [
+        'nickname', 'realname', 'sex', 'avator', 'motto', 'temp_access_token', 'permissions'
+    ]
 
     def __init__(self, auth, aid='', thown=True):
         """
         INIT
         :param auth:
         :param aid:
+        :param thown:
         """
         self.auth = auth
         if isinstance(aid, Account):
@@ -31,6 +37,13 @@ class AccountLogic(object):
         if thown and account is None:
             raise AccountInfoExcept.account_filter_error()
         return account
+
+    def get_account_info(self):
+        """
+        获取账户信息
+        :return:
+        """
+        return model_to_dict(self.account, self.NORMAL_FILES)
 
     def check(self, *permission):
         """

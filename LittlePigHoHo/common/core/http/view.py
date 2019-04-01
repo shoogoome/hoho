@@ -183,9 +183,10 @@ class HoHoView(HoHoViewBase):
     def __init__(self, request, **kwargs):
         super(HoHoView, self).__init__(request, **kwargs)
 
-        if self.request.META.get("hoho-auth-model") == "client":
+        if self.request.META.get('HTTP_HOHO_AUTH_MODEL') == "client":
             # 客户端登陆
             self.auth = HoHoClientAuthorization(request, self)
         # 浏览器登陆
-        self.auth = HoHoAuthAuthorization(request, self)
+        else:
+            self.auth = HoHoAuthAuthorization(request, self)
 

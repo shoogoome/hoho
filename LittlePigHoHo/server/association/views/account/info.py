@@ -84,7 +84,6 @@ class AssociationAccountInfo(HoHoView):
                 # 若是部长 则需添加部门id信息
                 if role == int(RoleEnum.MINISTER):
                     department_id = params.int('department_id',desc='部门id')
-
                     department = AssociationDepartment.objects.get_once(pk=department_id)
                     # 过滤部门不存在或非该协会部门
                     if department is None or department.association_id != account.association_id:
@@ -93,6 +92,17 @@ class AssociationAccountInfo(HoHoView):
                     account.department_id = department_id
                     department.manager.add(account)
                     department.save()
+                # 若此前是部长但现在不是则清除部门部长信息
+                elif account.role == int(RoleEnum.MINISTER):
+                    # 查询quertset对象 因为反正都会被修改所以没必要使用filter_cache 性能反而不如filter
+                    department = AssociationDepartment.objects.filter(
+                        association_id=aid, manager__id=account.id)
+                    # 去除管理员关联（部长）
+                    if department.exists():
+                        department = department[0]
+                        department.manager.remove(account)
+                        department.save()
+                    account.department = None
                 account.role = role
             # 权限修改
             if params.has('permissions'):
@@ -162,6 +172,8 @@ class AssociationAccountView(HoHoView):
             accounts = accounts.filter(role=params.int('role', desc='身份'))
         if params.has('retire'):
             accounts = accounts.filter(retire=params.bool('retire', desc='退休与否'))
+        if params.has('department'):
+            accounts = accounts.filter(department__id=params.int('department', desc='部门id'))
 
         @slicer(
             accounts,

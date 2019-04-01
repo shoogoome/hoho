@@ -12,8 +12,8 @@ class DepartmentLogic(AssociationLogic):
 
     NOMAL_FILE = [
         'id', 'name', 'short_name', 'description', 'association',
-        'association__id', 'association__name', 'master',
-        'master__id', 'master__realname'
+        'association__id', 'association__name', 'manager',
+        'manager__id', 'manager__nickname'
     ]
 
     def __init__(self, auth, sid, aid, did=""):

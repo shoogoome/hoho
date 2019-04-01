@@ -90,7 +90,7 @@ class AssociationDepartment(models.Model):
     association = models.ForeignKey('association.Association', on_delete=models.CASCADE)
 
     # 部长
-    manager = models.ManyToManyField('account.Account', blank=True,
+    manager = models.ManyToManyField('association.AssociationAccount', blank=True,
                                                   related_name='department_manager')
 
     # 创建时间

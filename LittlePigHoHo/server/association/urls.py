@@ -16,10 +16,10 @@ account_urlpatterns = [
 # 协会部门路由
 department_urlpatterns = [
     path('', DepartmentInfo.as_view(method=['POST'])),
-    path('/<int:did>', DepartmentInfo.as_view(method=['GET', 'PUT', 'DELETE'])),
     path('/list', DepartmentView.as_view(method=['GET'])),
     path('/_mget', DepartmentView.as_view(method=['POST'])),
-    path('/add', DepartmentMatters.as_view(method=['POST'])),
+    path('/<int:did>', DepartmentInfo.as_view(method=['GET', 'PUT', 'DELETE'])),
+    path('/<int:did>/add', DepartmentMatters.as_view(method=['POST'])),
 ]
 
 # 考勤路由

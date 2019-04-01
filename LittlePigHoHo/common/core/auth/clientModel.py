@@ -33,7 +33,7 @@ class HoHoClientAuthorization(HoHoAuthorization):
         token载入登陆信息
         :return:
         """
-        token = self.request.META.get("hoho-auth-token")
+        token = self.request.META.get("HTTP_HOHO_AUTH_TOKEN", "")
         token_key = "{0}@{1}".format(self.__effective_time, token)
         token_info = self.__redis.get(token_key)
 

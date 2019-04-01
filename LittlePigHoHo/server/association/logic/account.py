@@ -9,7 +9,7 @@ class AssociationAccountLogic(AssociationLogic):
     FIELD = [
         'nickanme', 'association', 'association__id', 'association__name',
         'department', 'department__id', 'department__name', 'role',
-        'permissions', 'retire'
+        'permissions', 'retire', 'id'
     ]
 
     def __init__(self, auth, sid, aid, acid=""):

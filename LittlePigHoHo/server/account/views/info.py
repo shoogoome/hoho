@@ -30,18 +30,18 @@ class AccountView(HoHoView):
         """
         params = ParamsParser(request.JSON)
         code = params.str('token', desc='验证ID')
-
         openid, session = self.get_openid(code)
-        client_auth_mode = self.request.META.get('hoho-auth-model') == "client"
+        client_auth_mode = self.request.META.get('HTTP_HOHO_AUTH_MODEL') == "client"
 
         accounts = Account.objects.filter_cache(temp_access_token=openid)
         if len(accounts) == 0:
             try:
-                realname = params.str('realname', desc='真实姓名')
+                nickname = params.str('nickname', desc='昵称')
+                sex = params.int('sex', desc='性别')
                 account = Account.objects.create(
-                    realname=realname,
-                    nickname=realname,
-                    sex=int(SexEnum.UNKNOW),
+                    realname=nickname,
+                    nickname=nickname,
+                    sex=sex,
                     temp_access_token=openid,
                     role=int(RoleEnum.DIRECTOR),
                     permissions=AccountPermissionEntity().dumps(),
@@ -52,6 +52,8 @@ class AccountView(HoHoView):
         else:
             account = accounts[0]
             _id = account.id
+        # 更新数据
+        self.auth.set_account(account)
         # 载入登陆信息
         if client_auth_mode:
             return Result({
@@ -119,8 +121,8 @@ class AccountView(HoHoView):
         :return:
         """
         url = "https://api.weixin.qq.com/sns/jscode2session?appid={0}&secret={1}&js_code={2}&grant_type=authorization_code".format(
-            "wx9fdb93e16d9b7154",
-            "9d3adbb76f7962828d3e2b33eb74bc5b",
+            "wxefe392b88181200a",
+            "3296b8d643b9a6e8603f18dec0df265c",
             code
         )
 

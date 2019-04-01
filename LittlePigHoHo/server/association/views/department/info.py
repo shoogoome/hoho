@@ -139,8 +139,8 @@ class DepartmentView(HoHoView):
         if params.has('key'):
             key = params.str('key', desc='关键字 名称 缩写')
             department = department.filter(
-                Q(name=key) |
-                Q(short_name=key)
+                Q(name__contains=key) |
+                Q(short_name__contains=key)
             )
 
         @slicer(department, limit=limit, page=page)
@@ -187,7 +187,7 @@ class DepartmentMatters(HoHoView):
         :param sid:
         :param aid:
         :param did:
-        :return: {id: status 0-成功 1-非协会成员 2-未知原因失败}
+        :return: {id: status 0-成功 1-非协会成员 2-已加入其他部门 3-未知原因失败}
         """
         logic = DepartmentLogic(self.auth, sid, aid, did)
 
@@ -197,17 +197,20 @@ class DepartmentMatters(HoHoView):
         status = {}
         accounts = AssociationAccount.objects.get_many(ids=ids)
         for account in accounts:
-            # 过滤非同协会账户
             try:
-                # ch
-                if account.association_id == logic.association.id:
+                # 过滤非同协会账户
+                if account.association_id != logic.association.id:
+                    st = 1
+                # 账户已加入其他部门
+                elif account.department is not None:
+                    st = 2
+                else:
                     account.department = logic.department
                     account.save()
                     st = 0
-                else:
-                    st = 1
+
             except:
-                st = 2
+                st = 3
             status[str(account.id)] = st
 
         return Result(status=status)

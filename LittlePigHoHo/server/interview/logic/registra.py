@@ -62,7 +62,7 @@ class RegistrationLogic(AssociationLogic):
         :return:
         """
         config = super().get_config()
-        return config.interview_version_dict().get(config.interview_version(), {})
+        return config.interview_version_dict().get(str(config.interview_version()), {})
 
     def content_format(self, content):
         """
@@ -72,11 +72,11 @@ class RegistrationLogic(AssociationLogic):
         """
         # 获取当前版本对应模板id
         config = self.get_interview_config()
-        tid = config.get(str(self.get_interview_version()), {}).get('template_id', -1)
+        tid = config.get('template_id', -1)
         # 获取模板
         template = InterviewRegistrationTemplate.objects.get_once(pk=int(tid))
         if template is None:
-            return InterviewInfoExcept.no_registration_template
+            raise InterviewInfoExcept.no_registration_template()
             # 获取自定义字段配置
         _config = InterviewRegistrationEntity.parse(template.config)
         custom_data = _config.custom_data()

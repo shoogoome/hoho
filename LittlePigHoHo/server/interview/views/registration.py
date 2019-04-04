@@ -7,6 +7,7 @@ from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
 from ..logic.registra import RegistrationLogic
 from ..models import InterviewRegistration
+import json
 
 
 class RegistrationInfo(HoHoView):
@@ -28,7 +29,7 @@ class RegistrationInfo(HoHoView):
             association=logic.association,
             version=logic.get_interview_version(),
             account=self.auth.get_account(),
-            content=logic.content_format(content),
+            content=json.dumps(logic.content_format(content)),
         )
 
         return Result(id=registra.id, association_id=self.auth.get_association_id())

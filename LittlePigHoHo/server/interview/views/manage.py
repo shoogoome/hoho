@@ -26,7 +26,8 @@ class InterviewManage(HoHoView):
         # 更新协会配置
         config = AssociationConfigureEntity.parse(logic.association.config)
         interview_version_dict = config.interview_version_dict()
-        interview_version_dict[str(config['interview_version'])] = {
+
+        interview_version_dict[str(config.interview_version() + 1)] = {
             "template_id": template_id,
             "start_time": start_time,
             "end_time": end_time

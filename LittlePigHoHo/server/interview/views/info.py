@@ -27,7 +27,7 @@ class RegistrationTemplateInfo(HoHoView):
         params = ParamsParser(request.JSON)
 
         title = params.str('title', desc='标题')
-        config = params.dict('config', desc='配置正文')
+        config = params.list('config', desc='配置正文')
 
         template = InterviewRegistrationTemplate.objects.create(
             association=logic.association,
@@ -69,7 +69,7 @@ class RegistrationTemplateInfo(HoHoView):
         if params.has('title'):
             template.title = params.str('title', desc='标题')
         if params.has('config'):
-            template.config = json.dumps(logic.config_format(params.dict('config', desc='配置信息')))
+            template.config = json.dumps(logic.config_format(params.list('config', desc='配置信息')))
 
         template.save()
         return Result(id=rtid, association_id=self.auth.get_association_id())

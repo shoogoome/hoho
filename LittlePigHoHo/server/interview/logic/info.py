@@ -61,28 +61,21 @@ class TemplateLogic(AssociationLogic):
         :return:
         """
         template_entity = InterviewRegistrationEntity()
-        template_entity.update(config)
         # 构建data
-        data = {
-            "major": template_entity.major(),
-            "college": template_entity.college(),
-            "phone": template_entity.phone(),
-            "introduce": template_entity.introduce(),
-            "custom_data": []
-        }
+        data = template_entity.dump()
         # 格式化自定义字段
-        for custom in template_entity.custom_data():
-            try:
-                _entity = InterviewCustomEntity()
-                _entity.update(custom)
+        for custom in config:
+            # try:
+            _entity = InterviewCustomEntity()
+            _entity.update(custom)
 
-                data['custom_data'].append({
-                    "title": _entity.title(),
-                    "require": _entity.require(),
-                    "default": _entity.default()
-                })
-            except:
-                pass
+            data['custom_data'].append({
+                "title": _entity.title(),
+                "require": _entity.require(),
+                "default": _entity.default()
+            })
+            # except:
+            #     pass
         return data
 
 

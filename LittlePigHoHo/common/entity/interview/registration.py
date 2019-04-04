@@ -19,7 +19,7 @@ class InterviewRegistrationEntity(EntityBase):
         self.introduce = PropType.str(default='')
 
         # 自定义扩展字段
-        self.custom_data = PropType.list(default='{}')
+        self.custom_data = PropType.list(default=[])
 
         # 解析参数
         super(InterviewRegistrationEntity, self).__init__(**kwargs)

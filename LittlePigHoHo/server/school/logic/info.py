@@ -2,9 +2,15 @@ from ..models import School
 from common.exceptions.school.info import SchoolInfoException
 from common.exceptions.scheduling.curriculum import CurriculumExcept
 from server.association.models import Association
+from common.utils.helper.m_t_d import model_to_dict
 
 
 class SchoolLogic(object):
+
+    NORMAL_FIELDS = [
+        'id', 'name', 'short_name', 'logo', 'description', 'config'
+    ]
+
 
     def __init__(self, auth, sid, thown=True):
         """
@@ -29,6 +35,13 @@ class SchoolLogic(object):
         if schools is None and thown:
             raise SchoolInfoException.school_not_found()
         return schools
+
+    def get_school_info(self):
+        """
+        获取学习信息
+        :return:
+        """
+        return model_to_dict(self.school, self.NORMAL_FIELDS)
 
     def filter_association(self):
         """

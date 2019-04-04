@@ -13,3 +13,7 @@ class AttendanceExcept(HoHoExceptBase):
     @classmethod
     def title_exist(cls):
         return cls("标题以存在")
+
+    @classmethod
+    def no_in_place(cls):
+        return cls("不在考勤地点范围之内")

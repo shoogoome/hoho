@@ -1,4 +1,6 @@
 mysql
+backups/*
+*.rdb
 __pycache__
 .idea
 .DS_Store
@@ -6,4 +8,5 @@ __pycache__
 *.pyc
 *.log
 *.egg-info
-!/redis/redis.conf
+redis
+# !/redis/redis.conf

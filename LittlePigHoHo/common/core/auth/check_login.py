@@ -9,7 +9,6 @@ def check_login(func):
     :param func:
     :return:
     """
-
     def check(*args, **kwargs):
         self = args[0]
         if self.auth.is_login():

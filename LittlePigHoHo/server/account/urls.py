@@ -11,5 +11,6 @@ urlpatterns = [
     path('/_mget', InfoView.as_view(method=['POST'])),
     # 开发登陆接口
     path('/register/this/is/jiekou/useing/to/kaifa', Login.as_view(method=['POST'])),
+    path('/update_id', Login.as_view(method=['GET'])),
 ]
 

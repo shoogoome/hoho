@@ -9,7 +9,6 @@ from common.enum.account.sex import SexEnum
 from common.core.dao.cache.factory import delete_model_single_object_cache
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-from common.core.dao.time_stamp import TimeStampField
 
 
 class Account(models.Model):

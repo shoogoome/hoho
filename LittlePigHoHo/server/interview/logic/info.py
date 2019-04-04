@@ -1,107 +1,94 @@
 
-from ..models import *
+from ..models import InterviewRegistrationTemplate
 from server.school.models import School
 from server.school.logic.info import SchoolLogic
 from server.association.logic.info import AssociationLogic
 from server.association.models import Association
 from common.exceptions.interview.info import InterviewInfoExcept
+from common.entity.interview.registration import InterviewRegistrationEntity
+from common.entity.interview.custom import InterviewCustomEntity
+from common.utils.helper.m_t_d import model_to_dict
 
 
-class RegistrationLogic(object):
+class TemplateLogic(AssociationLogic):
 
-    def __init__(self, auth, sid, aid, rid='', model=False, throw=False):
+    FIELD = [
+        'association', 'association__id', 'author', 'author__id', 
+        'config', 'update_time', 'title',
+    ]
+
+    def __init__(self, auth, sid, aid, rtid=''):
         """
         INIT
         :param auth:
         :param sid:
         :param aid:
-        :param rid:
-        :param model:
-        :param throw:
+        :param rtid:
         """
-        self.auth = auth
-        self.throw = throw
-        if isinstance(sid, SchoolLogic):
-            self.school_logic = sid
-            self.school = self.school_logic.school
-        elif isinstance(sid, School):
-            self.school_logic = SchoolLogic(self.auth, sid)
-            self.school = sid
-        else:
-            self.school_logic = SchoolLogic(self.auth, sid)
-            self.school = self.school_logic.school
-        if isinstance(aid, AssociationLogic):
-            self.association_logic = aid
-            self.association = self.association_logic.association
-        elif isinstance(aid, Association):
-            self.association_logic = AssociationLogic(self.auth, self.school_logic, aid)
-            self.association = aid
-        else:
-            self.association_logic = AssociationLogic(self.auth, self.school_logic, aid)
-            self.association = self.association_logic.association
-        if model:
-            self.registration_template = self.get_registration_template(rid)
-        else:
-            self.registration = self.get_registration(rid)
+        super(TemplateLogic, self).__init__(auth, sid, aid)
 
-    def get_registration(self, rid):
+        if isinstance(rtid, InterviewRegistrationTemplate):
+            self.template = rtid
+        else:
+            self.template = self.get_template(rtid)
+
+    def get_template(self, rtid):
         """
         获取报名表model
-        :param rid:
+        :param rtid:
         :return:
         """
-        if rid == "" or rid is None:
+        if rtid == "" or rtid is None:
             return
-        registration = Registration.objects.get_once(id=rid)
-        if registration is None and self.throw:
+        template = InterviewRegistrationTemplate.objects.get_once(pk=rtid)
+        if template is None or template.association_id != self.association.id:
             raise InterviewInfoExcept.no_registration()
-        return registration
+        return template
 
-    def get_using_template(self):
+    def get_template_info(self):
         """
-        获取启用模板
+        获取报名表信息
         :return:
         """
-        template = RegistrationTemplate.objects.filter(
-            association=self.association, using=True)
-        if not template.exists():
-            raise InterviewInfoExcept.no_registration_template()
-        return template[0]
+        if self.template is None:
+            return 
+        return model_to_dict(self.template, self.FIELD)
 
-    def using_template(self):
+    def config_format(self, config):
         """
-        启用模板
+        配置格式化
+        :param config:
         :return:
         """
-        if self.registration_template is None: return
-        registration_templat = RegistrationTemplate.objects.filter(
-            association=self.association, using=True)
-        if registration_templat.exists():
-            registration_templat[0].using = False
-            registration_templat[0].save()
-        self.registration_template.using = True
-        self.registration_template.save()
+        template_entity = InterviewRegistrationEntity()
+        template_entity.update(config)
+        # 构建data
+        data = {
+            "major": template_entity.major(),
+            "college": template_entity.college(),
+            "phone": template_entity.phone(),
+            "introduce": template_entity.introduce(),
+            "custom_data": []
+        }
+        # 格式化自定义字段
+        for custom in template_entity.custom_data():
+            try:
+                _entity = InterviewCustomEntity()
+                _entity.update(custom)
 
-    def nouse_template(self):
-        """
-        不使用模板
-        :return:
-        """
-        if self.registration_template is None: return
-        self.registration_template.using = False
+                data['custom_data'].append({
+                    "title": _entity.title(),
+                    "require": _entity.require(),
+                    "default": _entity.default()
+                })
+            except:
+                pass
+        return data
 
-    def get_registration_template(self, rid):
-        """
-        获取报名表模板model
-        :param rid:
-        :return:
-        """
-        if rid == "" or rid is None: return
-        registration_template = RegistrationTemplate.objects.filter(id=rid, association=self.association)
-        if not registration_template.exists():
-            if self.throw:
-                raise InterviewInfoExcept.no_registration_template()
-            return None
-        return registration_template[0]
+
+
+
+
+
 
 

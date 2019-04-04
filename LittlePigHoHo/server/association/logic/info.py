@@ -12,6 +12,7 @@ from common.exceptions.scheduling.curriculum import CurriculumExcept
 from common.entity.scheduling.curriculum import SchedulingCurriculumEntity
 from server.school.logic.info import SchoolLogic
 from ..models import AssociationAccount, AssociationAttendance
+from common.entity.association.config import AssociationConfigureEntity
 from common.utils.helper.m_t_d import model_to_dict
 
 class AssociationLogic(SchoolLogic):
@@ -63,7 +64,7 @@ class AssociationLogic(SchoolLogic):
         """
         ass_acc = AssociationAccount.objects.filter_cache(
             account=self.auth.get_account(), association=self.association)
-        if ass_acc is not None or ass_acc != []:
+        if ass_acc is not None and len(ass_acc) > 0:
             return ass_acc[0]
         return None
 
@@ -73,8 +74,8 @@ class AssociationLogic(SchoolLogic):
         :return:
         """
         # 获取全部信息或部分信息
-        field = (self.ASS_SECRECY_FILE + self.ASS_NOMAL_FILE) \
-            if self.check(AssociationPermissionEnum.MANAGE) else self.ASS_NOMAL_FILE
+        field = (self.ASS_SECRECY_FILE + self.ASS_NOMAL_FILE)
+        #     if self.check(AssociationPermissionEnum.MANAGE) else self.ASS_NOMAL_FILE
 
         if self.auth.get_account().role == int(RoleEnum.ADMIN):
             field += self.ADMIN_FILE
@@ -86,6 +87,16 @@ class AssociationLogic(SchoolLogic):
         :return:
         """
         return AssociationAccount.objects.filter_cache(association=self.association)
+
+    def get_config(self):
+        """
+        返回协会配置
+        :return:
+        """
+        if self.association is None:
+            return None
+        return AssociationConfigureEntity.parse(self.association.config)
+
 
     def get_curriculum(self):
         """

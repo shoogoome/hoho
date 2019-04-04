@@ -19,7 +19,7 @@ class Result(object):
 
     def to_dict(self):
         return {
-            "data": self.content
+            "data": self.content,
         }
 
     def dumps(self):

@@ -56,10 +56,10 @@ class AccountView(HoHoView):
         self.auth.set_account(account)
         # 载入登陆信息
         if client_auth_mode:
-            return Result({
+            return Result(data={
                 "id": _id,
                 "token": self.auth.create_token()
-            })
+            }, association_id=self.auth.get_association_id())
 
         self.auth.set_account(account)
         self.auth.set_session()
@@ -79,9 +79,9 @@ class AccountView(HoHoView):
         else:
             # 权限控制
             logic = AccountLogic(self.auth, aid)
-            logic.check(AccountPermissionEnum.VIEWS)
+            # logic.check(AccountPermissionEnum.VIEWS)
 
-        return Result()
+        return Result(data=logic.get_account_info(), association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, aid=''):
@@ -102,7 +102,7 @@ class AccountView(HoHoView):
             account = self.auth.get_account()
 
         with params.diff(account):
-            account.nickname = params.str('realname', desc='真实名称')
+            account.nickname = params.str('nickname', desc='昵称')
             account.realname = params.str('realname', desc='真实名称')
             account.sex = params.int('sex', desc='性别')
             account.email = params.str('email', desc='邮箱')
@@ -113,7 +113,7 @@ class AccountView(HoHoView):
 
         account.save()
 
-        return Result(id=account.id)
+        return Result(id=account.id, association_id=self.auth.get_association_id())
 
     def get_openid(self, code):
         """
@@ -158,7 +158,7 @@ class InfoView(HoHoView):
             alogic.account.permissions = permissions.dumps()
             alogic.account.save()
 
-            return Result(id=alogic.account.id)
+            return Result(id=alogic.account.id, association_id=self.auth.get_association_id())
 
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
@@ -178,16 +178,12 @@ class InfoView(HoHoView):
         if params.has('role'):
             accounts = accounts.filter(role=params.int('role', desc='身份角色'))
 
-        @slicer(
-            accounts,
-            limit=limit,
-            page=page
-        )
+        @slicer(accounts, limit=limit, page=page)
         def get_account_list(obj):
             return obj
 
         accounts, pagination = get_account_list()
-        return Result(accounts=accounts, pagination=pagination)
+        return Result(accounts=accounts, pagination=pagination, association_id=self.auth.get_association_id())
 
     def post(self, request):
         """
@@ -209,7 +205,7 @@ class InfoView(HoHoView):
             except:
                 pass
 
-        return Result(data)
+        return Result(data=data, association_id=self.auth.get_association_id())
 
 
 # !!!!! 仅仅为开发使用 !!!!!
@@ -240,6 +236,20 @@ class Login(HoHoView):
         self.auth.set_account(account)
         self.auth.set_session()
 
-        return Result(id=account.id)
+        return Result(id=account.id, association_id=self.auth.get_association_id())
 
+    def get(self, request):
+        """
+        切换协会id
+        :param request:
+        :return:
+        """
+        params = ParamsParser(request.GET)
+        code = params.int('association_id', desc='协会id')
 
+        try:
+            self.auth.update_association_id(code)
+        except:
+            raise AccountInfoExcept.error()
+
+        return Result(id=code, association_id=code)

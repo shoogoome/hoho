@@ -21,3 +21,7 @@ class AccountInfoExcept(HoHoExceptBase):
     @classmethod
     def token_error(cls, errmsg="get token error"):
         return cls(errmsg)
+
+    @classmethod
+    def error(cls):
+        return cls("操作失败")

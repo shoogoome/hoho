@@ -24,7 +24,7 @@ class TaskInfo(HoHoView):
         """
         logic = TaskLogic(self.auth, sid, aid, tid)
 
-        return Result(logic.get_task_info())
+        return Result(data=logic.get_task_info())
 
     def post(self, request, sid, aid):
         """
@@ -163,4 +163,4 @@ class TaskView(HoHoView):
             except:
                 pass
 
-        return Result(data)
+        return Result(data=data)

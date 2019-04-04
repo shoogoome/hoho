@@ -24,7 +24,7 @@ class AttendanceView(HoHoView):
         """
         logic = AttendanceLogic(self.auth, sid, aid, vid)
 
-        return Result(logic.get_attendance_info())
+        return Result(data=logic.get_attendance_info(), association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid, aid):
@@ -61,7 +61,7 @@ class AttendanceView(HoHoView):
             end_time=end_time,
         )
 
-        return Result(id=association.id)
+        return Result(id=association.id, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, sid, aid, vid):
@@ -92,7 +92,7 @@ class AttendanceView(HoHoView):
             attendance.end_time = params.float('end_time', desc='结束时间')
 
         attendance.save()
-        return Result(id=vid)
+        return Result(id=vid, association_id=self.auth.get_association_id())
 
     @check_login
     def delete(self, request, sid, aid, vid):
@@ -107,7 +107,7 @@ class AttendanceView(HoHoView):
         logic = AttendanceLogic(self.auth, sid, aid, vid)
 
         logic.attendance.delete()
-        return Result(id=vid)
+        return Result(id=vid, association_id=self.auth.get_association_id())
 
 
 class AttendanceInfo(HoHoView):
@@ -139,7 +139,7 @@ class AttendanceInfo(HoHoView):
             return obj
 
         attendances, pagination = get_attendances_list()
-        return Result(attendances=attendances, pagination=pagination)
+        return Result(attendances=attendances, pagination=pagination, association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid, aid):
@@ -163,7 +163,7 @@ class AttendanceInfo(HoHoView):
             except:
                 pass
 
-        return Result(data)
+        return Result(data=data, association_id=self.auth.get_association_id())
 
 
 class AttendanceSign(HoHoView):
@@ -178,10 +178,13 @@ class AttendanceSign(HoHoView):
         :param vid:
         :return:
         """
+        params = ParamsParser(request.GET)
+        lx = params.float('lx', desc='纬度')
+        ly = params.float('ly', desc='经度')
         logic = AttendanceLogic(self.auth, sid, aid, vid)
-        logic.sign_or_leave()
+        logic.sign_or_leave(lxy=(lx, ly))
 
-        return Result(id=vid)
+        return Result(id=vid, association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid, aid, vid):
@@ -194,12 +197,17 @@ class AttendanceSign(HoHoView):
         :return:
         """
         logic = AttendanceLogic(self.auth, sid, aid, vid)
+        params = ParamsParser(request.JSON)
+        _type = params.int('type', desc='考勤类别', default=0, require=False)   # type: int 0-协会 1-部门 2-个人
 
-        # 获取考勤数据
-        data = logic.get_range_sign_info(logic.attendance.start_time, logic.attendance.end_time)
-        info = data[str(logic.attendance.id)]
+        if _type == 0:
+            data = logic.get_association_sign_info()
+        elif _type == 1:
+            data = logic.get_department_sign_info(params.int('department', desc='部门id'))
+        elif _type == 2:
+            data = logic.get_account_sign_info()
 
-        return Result(info)
+        return Result(data=data, association_id=self.auth.get_association_id())
 
 
 class AttendanceManage(HoHoView):
@@ -225,7 +233,7 @@ class AttendanceManage(HoHoView):
         alogic.association.backlog = backlog.dumps()
         alogic.association.save()
 
-        return Result(id=vid)
+        return Result(id=vid, association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid, aid, vid):
@@ -252,10 +260,10 @@ class AttendanceManage(HoHoView):
             # 删除kv
             del backlog.attendance[str(aid)][str(vid)]
             # redis缓存更新
-            alogic.sign_or_leave(leave=True, account_id=aid)
+            alogic.sign_or_leave(leave=(True, aid))
             result[aid] = 1
         # 更新数据库
         alogic.association.backlog = backlog.dumps()
         alogic.association.save()
 
-        return Result(status=result)
+        return Result(status=result, association_id=self.auth.get_association_id())

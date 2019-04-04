@@ -8,7 +8,7 @@ redis_pool = {}
 def get_redis_conn(db=1):
     """
     建立Redis连接
-    :param db: 0-session  1-考勤  2-数据库缓存  3-资源缓存
+    :param db: 0-session  1-考勤  2-数据库缓存  3-资源缓存  4-评优缓存
     :return:
     """
     if db not in redis_pool.keys():
@@ -33,6 +33,7 @@ class RedisFactory(object):
         """
         self.name = name
         self.redis = get_redis_conn(db)
+        self.expire=86400
 
     def set(self, name, value, expire=86400):
         """
@@ -42,7 +43,7 @@ class RedisFactory(object):
         :param expire:
         :return:
         """
-        self.redis.set(self.build_name(name), value, ex=expire)
+        self.redis.set(self._build_name(name), value, ex=expire)
 
     def get(self, name):
         """
@@ -50,7 +51,7 @@ class RedisFactory(object):
         :param name:
         :return:
         """
-        return self.redis.get(self.build_name(name))
+        return self.redis.get(self._build_name(name))
 
     def hgetall(self, name):
         """
@@ -58,7 +59,16 @@ class RedisFactory(object):
         :param name:
         :return:
         """
-        return self.redis.hgetall(self.build_name(name))
+        return self.redis.hgetall(self._build_name(name))
+
+    def hget(self, name, key):
+        """
+        获取name对应key对应
+        :param name:
+        :param key:
+        :return:
+        """
+        return self.redis.hget(self._build_name(), key)
 
     def hmset(self, name, data, expire=86400):
         """
@@ -68,8 +78,20 @@ class RedisFactory(object):
         :param expire:
         :return:
         """
-        self.redis.hmset(self.build_name(name), data)
-        self.redis.expire(self.build_name(name), expire)
+        self.redis.hmset(self._build_name(name), data)
+        self.redis.expire(self._build_name(name), expire)
+
+    def hset(self, name, key, value, expire=86400):
+        """
+        添加hash 一天缓存
+        :param name:
+        :param key:
+        :param value:
+        :param expire:
+        :return:
+        """
+        self.redis.hset(self._build_name(name), key, value)
+        self.redis.expire(self._build_name(name), expire)
 
     def lpushs(self, name, data, expire=86400):
         """
@@ -79,7 +101,7 @@ class RedisFactory(object):
         :param expire:
         :return:
         """
-        name = self.build_name(name)
+        name = self._build_name(name)
         [(self.redis.rpush(name, i.encode()), self.redis.expire(name, expire)) for i in data]
 
     def lrange(self, name):
@@ -88,7 +110,7 @@ class RedisFactory(object):
         :param name:
         :return:
         """
-        data = self.redis.lrange(self.build_name(name), 0, -1)
+        data = self.redis.lrange(self._build_name(name), 0, -1)
         return [i.decode() for i in data]
 
 
@@ -98,7 +120,15 @@ class RedisFactory(object):
         :param name:
         :return:
         """
-        return self.redis.exists(self.build_name(name))
+        return self.redis.exists(self._build_name(name))
+
+    def ttl(self, name):
+        """
+        返回国企过期时间
+        :param name:
+        :return:
+        """
+        return self.redis.ttl(self._build_name(name))
 
     def delete(self, name):
         """
@@ -106,9 +136,9 @@ class RedisFactory(object):
         :param name:
         :return:
         """
-        self.redis.delete(self.build_name(name))
+        self.redis.delete(self._build_name(name))
 
-    def build_name(self, *key):
+    def _build_name(self, *key):
         """
         构建 redis name
         :param key:

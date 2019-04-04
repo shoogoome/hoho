@@ -27,7 +27,7 @@ class AssociationAccountInfo(HoHoView):
         :return:
         """
         logic = AssociationAccountLogic(self.auth, sid, aid, acid)
-        return Result(logic.get_account_info())
+        return Result(data=logic.get_account_info(), association_id=self.auth.get_association_id())
 
     def post(self, request, sid, aid):
         """
@@ -40,7 +40,7 @@ class AssociationAccountInfo(HoHoView):
         logic = AssociationLogic(self.auth, sid, aid)
         account = self.auth.get_account()
 
-        params = ParamsParser(request.GET)
+        params = ParamsParser(request.JSON)
         choosing_code = params.str('choosing_code')
         if logic.association.choosing_code != choosing_code:
             raise AssociationExcept.code_error()
@@ -58,7 +58,7 @@ class AssociationAccountInfo(HoHoView):
             association=logic.association,
             account=account,
         )
-        return Result(id=ata.id)
+        return Result(id=ata.id, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, sid, aid, acid=""):
@@ -125,7 +125,7 @@ class AssociationAccountInfo(HoHoView):
             account.nickname = params.str('nickname', desc='协会内昵称')
 
         account.save()
-        return Result(id=acid)
+        return Result(id=acid, association_id=self.auth.get_association_id())
 
     @check_login
     def delete(self, request, sid, aid, acid=""):
@@ -147,7 +147,7 @@ class AssociationAccountInfo(HoHoView):
 
         account.delete()
 
-        return Result(id=acid)
+        return Result(id=acid, association_id=self.auth.get_association_id())
 
 
 class AssociationAccountView(HoHoView):
@@ -175,16 +175,8 @@ class AssociationAccountView(HoHoView):
         if params.has('department'):
             accounts = accounts.filter(department__id=params.int('department', desc='部门id'))
 
-        @slicer(
-            accounts,
-            limit=limit,
-            page=page
-        )
-        def get_account_list(obj):
-            return obj
-
-        accounts, pagination = get_account_list()
-        return Result(accounts=accounts, pagination=pagination)
+        accounts, pagination = slicer(accounts, limit=limit, page=page)()()
+        return Result(accounts=accounts, pagination=pagination, association_id=self.auth.get_association_id())
 
 
     def post(self, request, sid, aid):
@@ -209,7 +201,7 @@ class AssociationAccountView(HoHoView):
             except:
                 pass
 
-        return Result(data)
+        return Result(data=data, association_id=self.auth.get_association_id())
 
 
 

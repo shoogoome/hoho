@@ -27,7 +27,7 @@ class TaskReportView(HoHoView):
         """
         logic = TaskLogic(self.auth, sid, aid, tid)
 
-        return Result(logic.get_task_report_info())
+        return Result(data=logic.get_task_report_info())
 
     def post(self, request, sid, aid, tid):
         """

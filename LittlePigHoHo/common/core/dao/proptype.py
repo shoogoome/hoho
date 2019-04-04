@@ -12,6 +12,9 @@ class PropType(object):
         self._value = kwargs.get('default', None)
         self._is_required = kwargs.get('required', False)
 
+    def __call__(self, *args, **kwargs):
+        return self._value
+
     def get_type(self):
         return self._type_calss
 

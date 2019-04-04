@@ -36,22 +36,19 @@ class HoHoClientAuthorization(HoHoAuthorization):
         token = self.request.META.get("HTTP_HOHO_AUTH_TOKEN", "")
         token_key = "{0}@{1}".format(self.__effective_time, token)
         token_info = self.__redis.get(token_key)
-
         try:
-            if token_info is not None:
-                token_info = base64.b64decode(token_info).decode('utf-8')
-                token_info = json.loads(token_info)
+            if token_info is None:
+                return False
+            token_info = base64.b64decode(token_info).decode('utf-8')
+            token_info = json.loads(token_info)
 
-                effective_time = float(token_info.get('effective_time', 0))
-                if time.time() > effective_time:
-                    self.__redis.delete(token_key)
-                    return False
-
-            else:
+            effective_time = float(token_info.get('effective_time', 0))
+            if time.time() > effective_time:
+                self.__redis.delete(token_key)
                 return False
 
             account_id = token_info.get('account_id', '')
-
+            self._association_id = self.__redis.get(token).decode()
             if self.set_login_status(account_id):
                 return True
             else:
@@ -59,6 +56,20 @@ class HoHoClientAuthorization(HoHoAuthorization):
             return False
         except:
             return False
+
+
+    def update_association_id(self, aid):
+        """
+        更新当前协会id
+        :param aid:
+        :return:
+        """
+        aid = str(aid)
+        token = self.request.META.get("HTTP_HOHO_AUTH_TOKEN", "")
+        ttl = self.__redis.ttl(token)
+        if ttl > 0:
+            self.__redis.set(token, aid)
+            self.__redis.expire(token, ttl)
 
     def create_token(self):
         """
@@ -73,10 +84,14 @@ class HoHoClientAuthorization(HoHoAuthorization):
         effective_time = time.time() + self.__effective_time
         token_info = {
             "account_id": self._account.id,
-            "effective_time": effective_time
+            "effective_time": effective_time,
         }
         msg = base64.b64encode(json.dumps(token_info).encode('utf-8')).decode('utf-8')
+        # session信息
         self.__redis.set(token_key, msg)
-        self.__redis.expireat(token_key, int(effective_time))
+        self.__redis.expire(token_key, int(self.__effective_time))
+        # 当前协会id
+        self.__redis.set(token, "")
+        self.__redis.expire(token, int(self.__effective_time))
 
         return token

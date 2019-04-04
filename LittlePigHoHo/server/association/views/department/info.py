@@ -30,7 +30,7 @@ class DepartmentInfo(HoHoView):
         """
         logic = DepartmentLogic(self.auth, sid, aid, did)
 
-        return Result(data=logic.get_department_info())
+        return Result(data=logic.get_department_info(), association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid, aid):
@@ -62,7 +62,7 @@ class DepartmentInfo(HoHoView):
             association=logic.association
         )
 
-        return Result(id=departmenr.id)
+        return Result(id=departmenr.id, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, sid, aid, did):
@@ -104,7 +104,7 @@ class DepartmentInfo(HoHoView):
 
         department.save()
 
-        return Result(id=did)
+        return Result(id=did, association_id=self.auth.get_association_id())
 
     @check_login
     def delete(self, request, sid, aid, did):
@@ -119,7 +119,7 @@ class DepartmentInfo(HoHoView):
         dlogic = DepartmentLogic(self.auth, sid, aid, did)
         dlogic.department.delete()
 
-        return Result(id=did)
+        return Result(id=did, association_id=self.auth.get_association_id())
 
 class DepartmentView(HoHoView):
 
@@ -149,7 +149,7 @@ class DepartmentView(HoHoView):
 
         departments, pagination = get_department_list()
 
-        return Result(departments=departments, pagination=pagination)
+        return Result(departments=departments, pagination=pagination, association_id=self.auth.get_association_id())
 
 
     def post(self, request, sid, aid):
@@ -174,7 +174,7 @@ class DepartmentView(HoHoView):
             except:
                 pass
 
-        return Result(data)
+        return Result(data=data, association_id=self.auth.get_association_id())
 
 
 class DepartmentMatters(HoHoView):
@@ -213,7 +213,7 @@ class DepartmentMatters(HoHoView):
                 st = 3
             status[str(account.id)] = st
 
-        return Result(status=status)
+        return Result(status=status, association_id=self.auth.get_association_id())
 
 
 

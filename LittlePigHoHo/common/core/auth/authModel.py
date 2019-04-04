@@ -25,7 +25,7 @@ class Authorization(object):
         """
         ...
 
-    def set_account(self):
+    def set_account(self, account):
         """
         设置账户
         :return:
@@ -43,6 +43,7 @@ class HoHoAuthorization(Authorization):
         super(HoHoAuthorization, self).__init__(**kwargs)
         self._is_login = False
         self._account = None
+        self._association_id = ""
 
     def is_login(self):
         """
@@ -65,7 +66,13 @@ class HoHoAuthorization(Authorization):
         :return:
         """
         self._account = account
-        pass
+
+    def get_association_id(self):
+        """
+        返回当前协会id
+        :return:
+        """
+        return self._association_id
 
     @staticmethod
     def fetch_account_by_id(aid):
@@ -74,10 +81,7 @@ class HoHoAuthorization(Authorization):
         :param aid:
         :return:
         """
-        try:
-            return Account.objects.get(id=aid)
-        except:
-            return None
+        return Account.objects.get_once(pk=aid)
 
     def set_login_status(self, account_id):
         """

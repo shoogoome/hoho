@@ -21,14 +21,14 @@ class InterviewRegistrationTemplate(models.Model):
     # 关联协会
     association = models.ForeignKey('association.Association', on_delete=models.CASCADE)
 
+    # 创建人
+    author = models.ForeignKey('association.AssociationAccount', blank=True, on_delete=models.SET_NULL, null=True)
+
     # 标题
     title = models.CharField(max_length=255)
 
-    # 附加信息
-    additional = models.TextField(default='{}')
-
-    # 启用与否
-    using = models.BooleanField(default=False)
+    # 配置
+    config = models.TextField(default='{}')
 
     # 创建时间
     create_time = TimeStampField(auto_now_add=True)
@@ -53,14 +53,14 @@ class InterviewRegistration(models.Model):
     # 关联协会
     association = models.ForeignKey('association.Association', on_delete=models.CASCADE)
 
+    # 版本号
+    version = models.IntegerField(default=0)
+
     # 关联账户
     account = models.ForeignKey('account.Account', on_delete=models.CASCADE)
 
-    # 附加信息
-    additional = models.TextField(default='{}')
-
-    # 是否淘汰
-    eliminate = models.BooleanField(default=False)
+    # 正文信息
+    content = models.TextField(default='{}')
 
     # 创建时间
     create_time = TimeStampField(auto_now_add=True)

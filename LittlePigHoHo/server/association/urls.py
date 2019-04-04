@@ -1,6 +1,7 @@
 from django.urls import path, include
 from server.notice.urls import urlpatterns as notice_urlpatterns
 from server.task.urls import urlpatterns as task_urlpatterns
+from server.appraising.urls import urlpatterns as appraising_urlpatterns
 
 from .views import *
 
@@ -54,4 +55,6 @@ urlpatterns = [
     path('/<int:aid>/notices', include(notice_urlpatterns)),
     # 任务
     path('/<int:aid>/tasks', include(task_urlpatterns)),
+    # 绩效考核
+    path('/<int:aid>/appraisings', include(appraising_urlpatterns))
 ]

@@ -212,3 +212,23 @@ exit
 apt-get install gcc
 gcc
 exit
+lks
+ls
+cd root/LittlePigHoHo/
+ls
+cd server
+ls
+python3 a.py 
+python3 a.py 
+ls
+python3 a.py 
+python3 a.py 
+python3 a.py 
+python3 a.py 
+llllllllls
+cd ..
+ls
+python3 manage.py test_data
+pip3 install faker
+pip install faker
+exit

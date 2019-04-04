@@ -19,6 +19,8 @@ from common.utils.helper.pagination import slicer
 
 class AssociationInfoView(HoHoView):
 
+    VERSION = False
+
     def get(self, request, sid, aid):
         """
         获取协会列表
@@ -28,7 +30,11 @@ class AssociationInfoView(HoHoView):
         :return:
         """
         logic = AssociationLogic(self.auth, sid, aid)
-        return Result(logic.get_association_info())
+
+        # 获取评优版本信息
+        if self.VERSION:
+            return Result(data=logic.get_config().version_dict, association_id=self.auth.get_association_id())
+        return Result(logic.get_association_info(), association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid):
@@ -74,7 +80,7 @@ class AssociationInfoView(HoHoView):
             account.permissions = permissions.dumps()
             account.save()
 
-        return Result(id=associatime.id)
+        return Result(id=associatime.id, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, sid, aid):
@@ -97,7 +103,7 @@ class AssociationInfoView(HoHoView):
             # logo=upload(request.FILES.get('image', None), SCHOOL_LOGO),
             association.save()
 
-        return Result(id=association.id)
+        return Result(id=association.id, association_id=self.auth.get_association_id())
 
     @check_login
     def delete(self, request, sid, aid):
@@ -114,7 +120,7 @@ class AssociationInfoView(HoHoView):
         alogic = AssociationLogic(self.auth, sid, aid)
         alogic.association.delete()
 
-        return Result(id=aid)
+        return Result(id=aid, association_id=self.auth.get_association_id())
 
 
 class AssociationVerification(HoHoView):
@@ -160,7 +166,7 @@ class AssociationVerification(HoHoView):
             return obj
 
         associations, pagination = get_associations_list()
-        return Result(associations=associations, pagination=pagination)
+        return Result(associations=associations, pagination=pagination, association_id=self.auth.get_association_id())
 
     def post(self, request, sid):
         """
@@ -183,7 +189,7 @@ class AssociationVerification(HoHoView):
             except:
                 pass
 
-        return Result(data)
+        return Result(data=data, association_id=self.auth.get_association_id())
 
 
 

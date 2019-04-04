@@ -23,7 +23,7 @@ class NoticeInfo(HoHoView):
         """
         logic = NoticeLogic(self.auth, sid, aid, nid)
 
-        return Result(logic.get_notice_info())
+        return Result(data=logic.get_notice_info(), association_id=self.auth.get_association_id())
 
     def post(self, request, sid, aid):
         """
@@ -57,7 +57,7 @@ class NoticeInfo(HoHoView):
             notice.department_id = department
             notice.save()
 
-        return Result(id=notice.id)
+        return Result(id=notice.id, association_id=self.auth.get_association_id())
 
     def put(self, request, sid, aid, nid):
         """
@@ -80,7 +80,7 @@ class NoticeInfo(HoHoView):
 
         notice.save()
 
-        return Result(id=nid)
+        return Result(id=nid, association_id=self.auth.get_association_id())
 
     def delete(self, auth, sid, aid, nid):
         """
@@ -94,7 +94,7 @@ class NoticeInfo(HoHoView):
         logic = NoticeLogic(self.auth, sid, aid, nid)
         logic.notice.delete()
 
-        return Result(id=nid)
+        return Result(id=nid, association_id=self.auth.get_association_id())
 
 
 class NoticeView(HoHoView):
@@ -133,7 +133,7 @@ class NoticeView(HoHoView):
             return obj
 
         notices, pagination = get_notice_list()
-        return Result(notices=notices, pagination=pagination)
+        return Result(notices=notices, pagination=pagination, association_id=self.auth.get_association_id())
 
     def post(self, request, sid, aid):
         """
@@ -157,4 +157,4 @@ class NoticeView(HoHoView):
             except:
                 pass
 
-        return Result(data)
+        return Result(data=data, association_id=self.auth.get_association_id())

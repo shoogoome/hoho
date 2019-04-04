@@ -16,9 +16,6 @@ from common.utils.helper.pagination import slicer
 from django.db.models import Q
 
 class SchoolView(HoHoView):
-    NORMAL_FIELDS = [
-        'id', 'name', 'short_name', 'logo', 'description', 'config'
-    ]
 
     def get(self, request, sid):
         """
@@ -28,7 +25,7 @@ class SchoolView(HoHoView):
         :return:
         """
         logic = SchoolLogic(self.auth, sid)
-        return Result(model_to_dict(logic.school, self.NORMAL_FIELDS))
+        return Result(data=logic.get_school_info(), association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid=''):
@@ -51,7 +48,7 @@ class SchoolView(HoHoView):
             # logo=upload(request.FILES.get('image', None), SCHOOL_LOGO),
         )
 
-        return Result(id=school.id)
+        return Result(id=school.id, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, sid):
@@ -80,7 +77,7 @@ class SchoolView(HoHoView):
 
             school.save()
 
-        return Result(id=school.id)
+        return Result(id=school.id, association_id=self.auth.get_association_id())
 
     @check_login
     def delete(self, request, sid):
@@ -96,7 +93,7 @@ class SchoolView(HoHoView):
         logic = SchoolLogic(self.auth, sid, True)
         logic.school.delete()
 
-        return Result(id=sid)
+        return Result(id=sid, association_id=self.auth.get_association_id())
 
 
 class SchoolList(HoHoView):
@@ -131,7 +128,27 @@ class SchoolList(HoHoView):
             return obj
 
         schools, pagination = get_school_list()
-        return Result(schools=schools, pagination=pagination)
+        return Result(schools=schools, pagination=pagination, association_id=self.auth.get_association_id())
+
+    def post(self, request):
+        """
+        批量获取学校信息
+        :param request:
+        :return:
+        """
+        params = ParamsParser(request.JSON)
+
+        ids = params.list('ids', desc='id列表')
+
+        data = []
+        schools = School.objects.get_many(ids=ids)
+        for school in schools:
+            try:
+                logic = SchoolLogic(self.auth, school)
+                data.append(logic.get_school_info())
+            except:
+                pass
+        return Result(data=data, association_id=self.auth.get_association_id())
 
 
 

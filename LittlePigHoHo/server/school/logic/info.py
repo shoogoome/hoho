@@ -3,6 +3,8 @@ from common.exceptions.school.info import SchoolInfoException
 from common.exceptions.scheduling.curriculum import CurriculumExcept
 from server.association.models import Association
 from common.utils.helper.m_t_d import model_to_dict
+from common.entity.school.info import SchoolEntity
+from common.entity.scheduling.curriculum import SchedulingCurriculumEntity
 
 
 class SchoolLogic(object):
@@ -36,6 +38,13 @@ class SchoolLogic(object):
             raise SchoolInfoException.school_not_found()
         return schools
 
+    def get_school_config(self):
+        """
+        获取学校配置信息
+        :return:
+        """
+        return SchoolEntity.parse(self.school.config)
+
     def get_school_info(self):
         """
         获取学习信息
@@ -50,13 +59,29 @@ class SchoolLogic(object):
         """
         return Association.objects.filter_cache(school=self.school)
 
-    def get_curriculum(self):
+    def get_school_curriculum_config(self):
         """
-        获取无课表配置
+        获取学校无课表配置
         :return:
         """
-        curriculum = self.school.curriculum_set.all()
-        if not curriculum.exists():
-            raise CurriculumExcept.no_curriculum()
-        return curriculum[0]
+        config = self.get_school_config()
+        _config = SchedulingCurriculumEntity()
+        _config.update(config.curriculum())
+        return _config
 
+    def curriculum_format(self, content):
+        """
+        格式化课表配置
+        :return:
+        """
+        # 格式化配置
+        data = {"time": {}}
+        index = 1
+        for _, v in content.items():
+            data['time']["time{}".format(index)] = {
+                "start_time": v.get('start_time', "0"),
+                "end_time": v.get('end_time', "0")
+            }
+            index += 1
+
+        return data

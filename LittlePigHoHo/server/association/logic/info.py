@@ -97,35 +97,6 @@ class AssociationLogic(SchoolLogic):
             return None
         return AssociationConfigureEntity.parse(self.association.config)
 
-
-    def get_curriculum(self):
-        """
-        获取无课表配置model
-        :return:
-        """
-        curriculum = self.association.curriculum_set.all()
-
-        if not curriculum.exists():
-            raise CurriculumExcept.no_curriculum()
-        return curriculum[0]
-    
-    def check_format(self, data):
-        """
-        检查无课表配置
-        :param data: 
-        :return: 
-        """
-        d_time = data.get('time', None)
-        if d_time is None:
-            return False
-        time = SchedulingCurriculumEntity.parse(self.get_curriculum().content).dump().get('time')
-        d_keys = d_time.keys()
-
-        for key in d_keys:
-            # 过滤time参数
-            if len(re.findall('time', key)) <= 0:
-                raise CurriculumExcept.format_error()
-
     @staticmethod
     def elective_code():
         """

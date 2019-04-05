@@ -9,5 +9,7 @@ class CurriculumExcept(HoHoExceptBase):
 
     @classmethod
     def no_curriculum(cls):
-        return cls("未配置无课表")
+        return cls("无该无课表配置")
+
+
 

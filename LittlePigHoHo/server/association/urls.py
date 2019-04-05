@@ -3,6 +3,7 @@ from server.notice.urls import urlpatterns as notice_urlpatterns
 from server.task.urls import urlpatterns as task_urlpatterns
 from server.appraising.urls import urlpatterns as appraising_urlpatterns
 from server.interview.urls import urlpatterns as interview_urlpatterns
+from server.scheduling.urls import urlpatterns as scheduling_urlpatterns
 
 from .views import *
 
@@ -60,4 +61,5 @@ urlpatterns = [
     path('/<int:aid>/appraisings', include(appraising_urlpatterns)),
     # 招新模块
     path('/<int:aid>/interviews', include(interview_urlpatterns)),
+    path('/<int:aid>/schedulings', include(scheduling_urlpatterns)),
 ]

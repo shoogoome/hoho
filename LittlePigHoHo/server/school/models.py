@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 
 from common.core.dao.time_stamp import TimeStampField
+from common.entity.school.info import SchoolEntity
 
 
 # 学校表
@@ -30,8 +31,8 @@ class School(models.Model):
     # 学校简介
     description = models.CharField(max_length=255, default="",  blank=True)
 
-    # 学校配置信息(用户可以改动的部分)
-    config = models.TextField(default='{}')
+    # 学校配置信息(目前为学校课表配置)
+    config = models.TextField(default=SchoolEntity().dumps())
 
     # 创建时间
     create_time = TimeStampField(auto_now_add=True)

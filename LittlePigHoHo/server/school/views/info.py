@@ -35,17 +35,12 @@ class SchoolView(HoHoView):
         :param sid:
         :return:
         """
-        # 权限检查 暂时关闭
-        # if self.auth.get_account().role != int(RoleEnum.ADMIN):
-        #     raise SchoolInfoException.no_permission()
         params = ParamsParser(request.JSON)
 
         school = School.objects.create(
             name=params.str('name', desc='学校名称'),
             short_name=params.str('short_name', desc='缩写', require=False, default=''),
             description=params.str('description', desc='简介', require=False, default=''),
-            config=json.dumps(params.dict('profile', desc='配置', require=False, default={})),
-            # logo=upload(request.FILES.get('image', None), SCHOOL_LOGO),
         )
 
         return Result(id=school.id, association_id=self.auth.get_association_id())
@@ -58,22 +53,19 @@ class SchoolView(HoHoView):
         :param sid:
         :return:
         """
-
-        # 权限检查暂时关闭
-        # if self.auth.get_account().role != int(RoleEnum.ADMIN):
-        #     raise SchoolInfoException.no_permission()
         params = ParamsParser(request.JSON)
         logic = SchoolLogic(self.auth, sid)
 
         school = logic.school
         if params.has('config'):
             config = params.dict('config', desc='配置')
-            school.profile = json.dumps(config)
+            school.config = json.dumps({
+                "curriculum": logic.curriculum_format(config)
+            })
         with params.diff(school):
             school.name = params.str('name', desc='学校名称')
             school.short_name = params.str('short_name', desc='缩写')
             school.description = params.str('description', desc='简介')
-            # association.logo = upload(request.FILES.get('image', None), SCHOOL_LOGO)
 
             school.save()
 
@@ -87,8 +79,8 @@ class SchoolView(HoHoView):
         :param sid:
         :return:
         """
-        if self.auth.get_account().role != int(RoleEnum.ADMIN):
-            raise SchoolInfoException.no_permission()
+        # if self.auth.get_account().role != int(RoleEnum.ADMIN):
+        #     raise SchoolInfoException.no_permission()
 
         logic = SchoolLogic(self.auth, sid, True)
         logic.school.delete()

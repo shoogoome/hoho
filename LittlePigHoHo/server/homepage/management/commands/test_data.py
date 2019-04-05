@@ -6,6 +6,15 @@ from faker import Faker
 import json
 import random
 
+
+school_name = [
+    ("北京师范大学", "bnu"),
+    ("北京理工大学", "sdhfwoehfwe"),
+    ("北京师范大学珠海分校", "bnuz"),
+]
+
+
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
@@ -16,20 +25,38 @@ class Command(BaseCommand):
         :return:
         """
         fake = Faker(locale='zh_CN')
-
-        for i in range(3, 102):
+        # 创建账户信息
+        for i in range(100):
             p = fake.profile()
-            # Account.objects.create(
-            #     nickname=p.get('name'),
-            #     realname=p.get('name'),
-            #     temp_access_token=i
-            # )
+            Account.objects.create(
+                nickname=p.get('name'),
+                realname=p.get('name'),
+                temp_access_token=i
+            )
+            print("[*] create account success")
 
+        # 创建学校
+        for i in range(3):
+            # 会话session
             s = requests.session()
             response = s.post("http://hoho.server.net/accounts/register/this/is/jiekou/useing/to/kaifa", json={
-                "token": 121
+                "token": i
             })
-            print(response.text)
+            if response.status_code == 200:
+                print("[*] login success...")
+
+            name = school_name[i]
+            url = "http://hoho.server.net/schools?debug=1"
+            response = s.post(url=url, json={
+                "name": name[0],
+                "short_name": name[1],
+                "description": ""
+            })
+            if response.status_code == 200:
+                print("[*] create school success...")
+            else:
+                print("[!] create school fail...")
+
             #
             # response = s.post("http://hoho.server.net/schools/1/associations/1/accounts?debug=1", json={
             #     "choosing_code": "20535904"
@@ -41,15 +68,15 @@ class Command(BaseCommand):
             #
             # print(response.content)
 
-            ss = ["A", "B", "C"]
-
-            response = s.post("http://hoho.server.net/schools/1/associations/1/appraisings/scores?debug=1", json={
-                "target_id": i,
-                "content": {
-                    "1": random.choice(ss),
-                    "2": random.choice(ss)
-                }
-            })
-
-            print(response.text)
+            # ss = ["A", "B", "C"]
+            #
+            # response = s.post("http://hoho.server.net/schools/1/associations/1/appraisings/scores?debug=1", json={
+            #     "target_id": i,
+            #     "content": {
+            #         "1": random.choice(ss),
+            #         "2": random.choice(ss)
+            #     }
+            # })
+            #
+            # print(response.text)
 

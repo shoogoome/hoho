@@ -14,8 +14,8 @@ from ..models import Association
 from ..models import AssociationAccount
 from django.db.models import Q
 from common.utils.helper.pagination import slicer
-
-# from common.entity.association.backlog import AssociationBacklog
+from server.scheduling.models import AssociationCurriculum
+import json
 
 class AssociationInfoView(HoHoView):
 
@@ -44,6 +44,7 @@ class AssociationInfoView(HoHoView):
         :param sid:
         :return:
         """
+        logic = AssociationLogic(self.auth, sid)
         params = ParamsParser(request.JSON)
         account = self.auth.get_account()
 
@@ -54,7 +55,7 @@ class AssociationInfoView(HoHoView):
 
         # 创建协会
         config = AssociationConfigureEntity()
-        associatime = Association.objects.create(
+        association = Association.objects.create(
             name=params.str('name', desc='名称'),
             short_name=params.str('short_name', desc='缩写', require=False, default=''),
             description=params.str('description', desc='简介', require=False, default=''),
@@ -64,11 +65,18 @@ class AssociationInfoView(HoHoView):
             # logo=upload(request.FILES.get('image', None), SCHOOL_LOGO),
         )
 
+        # 创建课表配置
+        AssociationCurriculum.objects.create(
+            title="{}课表配置".format(association.name),
+            association=association,
+            content=logic.get_school_curriculum_config().dumps()
+        )
+
         # 创建协会人事关联
         AssociationAccount.objects.create(
             nickname=account.realname,
             account=account,
-            association=associatime,
+            association=association,
             role=int(RoleEnum.PRESIDENT),
         )
 
@@ -80,7 +88,7 @@ class AssociationInfoView(HoHoView):
             account.permissions = permissions.dumps()
             account.save()
 
-        return Result(id=associatime.id, association_id=self.auth.get_association_id())
+        return Result(id=association.id, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, sid, aid):

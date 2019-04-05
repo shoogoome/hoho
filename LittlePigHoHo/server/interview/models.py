@@ -54,7 +54,7 @@ class InterviewRegistration(models.Model):
     association = models.ForeignKey('association.Association', on_delete=models.CASCADE)
 
     # 版本号
-    version = models.IntegerField(default=0)
+    version = models.FloatField(default=0.0)
 
     # 关联账户
     account = models.ForeignKey('account.Account', on_delete=models.CASCADE)

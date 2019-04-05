@@ -25,7 +25,7 @@ def get_redis_conn(db=1):
 class RedisFactory(object):
 
 
-    def __init__(self, name="default", db=1):
+    def __init__(self, name="default", db=1, expire=86400):
         """
         缓存工厂
         :param name: 默认缓存key域
@@ -33,17 +33,16 @@ class RedisFactory(object):
         """
         self.name = name
         self.redis = get_redis_conn(db)
-        self.expire=86400
+        self.expire=expire
 
-    def set(self, name, value, expire=86400):
+    def set(self, name, value):
         """
         set方法
         :param name:
         :param value:
-        :param expire:
         :return:
         """
-        self.redis.set(self._build_name(name), value, ex=expire)
+        self.redis.set(self._build_name(name), value, ex=self.expire)
 
     def get(self, name):
         """
@@ -70,30 +69,28 @@ class RedisFactory(object):
         """
         return self.redis.hget(self._build_name(), key)
 
-    def hmset(self, name, data, expire=86400):
+    def hmset(self, name, data):
         """
         添加hash入缓存 一天缓存时间
         :param name:
         :param data:
-        :param expire:
         :return:
         """
         self.redis.hmset(self._build_name(name), data)
-        self.redis.expire(self._build_name(name), expire)
+        self.redis.expire(self._build_name(name), self.expire)
 
-    def hset(self, name, key, value, expire=86400):
+    def hset(self, name, key, value):
         """
         添加hash 一天缓存
         :param name:
         :param key:
         :param value:
-        :param expire:
         :return:
         """
         self.redis.hset(self._build_name(name), key, value)
-        self.redis.expire(self._build_name(name), expire)
+        self.redis.expire(self._build_name(name), self.expire)
 
-    def lpushs(self, name, data, expire=86400):
+    def lpushs(self, name, data):
         """
         数组批量缓存
         :param name:
@@ -102,7 +99,7 @@ class RedisFactory(object):
         :return:
         """
         name = self._build_name(name)
-        [(self.redis.rpush(name, i.encode()), self.redis.expire(name, expire)) for i in data]
+        [(self.redis.rpush(name, i.encode()), self.redis.expire(name, self.expire)) for i in data]
 
     def lrange(self, name):
         """

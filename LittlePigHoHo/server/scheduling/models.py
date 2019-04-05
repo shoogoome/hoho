@@ -1,10 +1,9 @@
 from django.db import models
-from common.core.dao.cache.model_manager import HoHoModelManager
-from common.core.dao.cache.factory import bind_model_cached_manager_signal
-from common.core.dao.cache.factory import delete_model_single_object_cache
-from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-
+from django.dispatch import receiver
+from .logic.redis import SchedulingRedis
+from common.core.dao.cache.factory import delete_model_single_object_cache
+from common.core.dao.cache.model_manager import HoHoModelManager
 from common.core.dao.time_stamp import TimeStampField
 
 
@@ -22,10 +21,7 @@ class AssociationCurriculum(models.Model):
     title = models.CharField(max_length=100)
 
     # 协会
-    school = models.ForeignKey('school.School', on_delete=models.CASCADE)
-
-    # 描述
-    description = models.CharField(max_length=255, default="",  blank=True)
+    association = models.ForeignKey('association.Association', on_delete=models.CASCADE)
 
     # 内容
     content = models.TextField(default='{}')
@@ -35,7 +31,6 @@ class AssociationCurriculum(models.Model):
 
     # 最后更新时间
     update_time = TimeStampField(auto_now=True)
-
 
     # 重构管理器
     objects = HoHoModelManager()
@@ -62,8 +57,6 @@ class AssociationAccountCurriculum(models.Model):
     # 内容
     content = models.TextField(default='{}')
 
-    from common.core.dao.time_stamp import TimeStampField
-
     # 创建时间
     create_time = TimeStampField(auto_now_add=True)
 
@@ -74,7 +67,7 @@ class AssociationAccountCurriculum(models.Model):
     objects = HoHoModelManager()
 
     def __str__(self):
-        return "%d %s %s".format(
+        return "{} {} {}".format(
             self.id,
             self.account.account.realname,
             self.curriculum.title
@@ -124,8 +117,18 @@ class AssociationScheduling(models.Model):
         return "[{}] {} {}".format(self.id, self.title, self.association.name)
 
 
-receiver(post_save, sender=AssociationAccountCurriculum)(delete_model_single_object_cache)
-receiver(post_delete, sender=AssociationAccountCurriculum)(delete_model_single_object_cache)
+
+def update_cache(instance, **kwargs):
+    # 清除数据库缓存
+    delete_model_single_object_cache(instance, **kwargs)
+    # 课表变动则删除缓存
+    redis = SchedulingRedis()
+    name = str(instance.curriculum.association_id)
+    redis.delete(name)
+
+
+receiver(post_save, sender=AssociationAccountCurriculum)(update_cache)
+receiver(post_delete, sender=AssociationAccountCurriculum)(update_cache)
 
 receiver(post_save, sender=AssociationCurriculum)(delete_model_single_object_cache)
 receiver(post_delete, sender=AssociationCurriculum)(delete_model_single_object_cache)

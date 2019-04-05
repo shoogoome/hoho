@@ -19,5 +19,6 @@ urlpatterns = [
     # 报名
     path('/registrations', include(registration_urlpatterns)),
     # 管理
-    path('/manage', InterviewManage.as_view(method=['GET', 'POST'])),
+    path('/manage', InterviewManage.as_view(method=['GET', 'POST'], FILTER=False)),
+    path('/filter', InterviewManage.as_view(method=['POST'])),
 ]

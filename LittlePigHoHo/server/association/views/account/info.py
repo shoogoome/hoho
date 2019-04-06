@@ -1,18 +1,17 @@
 from common.core.auth.check_login import check_login
 from common.core.http.view import HoHoView
 from common.entity.association.permissions import AssociationPermissionsEntity
-# from common.entity.association.attendance import AssociationAttendanceEntity
+from common.enum.account.role import RoleEnum
 from common.exceptions.association.info import AssociationExcept
+from common.utils.helper.pagination import slicer
 from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
-from server.association.logic.info import AssociationLogic
 from server.association.logic.account import AssociationAccountLogic
+from server.association.logic.info import AssociationLogic
 from server.association.models import AssociationAccount
-from server.association.models import AssociationDepartment
-from django.db.models import Q
-from common.utils.helper.pagination import slicer
-from common.enum.account.role import RoleEnum
+from common.enum.association.permission import AssociationPermissionEnum
 from ...models import AssociationDepartment
+
 
 class AssociationAccountInfo(HoHoView):
 
@@ -29,6 +28,7 @@ class AssociationAccountInfo(HoHoView):
         logic = AssociationAccountLogic(self.auth, sid, aid, acid)
         return Result(data=logic.get_account_info(), association_id=self.auth.get_association_id())
 
+    @check_login
     def post(self, request, sid, aid):
         """
         加入协会
@@ -74,8 +74,7 @@ class AssociationAccountInfo(HoHoView):
         alogic = AssociationAccountLogic(self.auth, sid, aid, acid)
 
         if acid != "":
-            # 权限处理 #
-
+            # alogic.check(AssociationPermissionEnum.ASSOCIATION)
             account = alogic.other_account
             # 角色修改
             if params.has('role'):
@@ -83,7 +82,7 @@ class AssociationAccountInfo(HoHoView):
                 role = params.int('role', desc='用户角色')
                 # 若是部长 则需添加部门id信息
                 if role == int(RoleEnum.MINISTER):
-                    department_id = params.int('department_id',desc='部门id')
+                    department_id = params.int('department_id', desc='部门id')
                     department = AssociationDepartment.objects.get_once(pk=department_id)
                     # 过滤部门不存在或非该协会部门
                     if department is None or department.association_id != account.association_id:
@@ -140,8 +139,8 @@ class AssociationAccountInfo(HoHoView):
         alogic = AssociationAccountLogic(self.auth, sid, aid, acid)
 
         if acid != "":
+            # alogic.check(AssociationPermissionEnum.ASSOCIATION)
             account = alogic.other_account
-            # 权限判断 #
         else:
             account = alogic.account
 
@@ -152,6 +151,7 @@ class AssociationAccountInfo(HoHoView):
 
 class AssociationAccountView(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid):
         """
         获取协会用户列表
@@ -160,6 +160,8 @@ class AssociationAccountView(HoHoView):
         :param aid:
         :return:
         """
+        # 自动权限检查
+        logic = AssociationLogic(self.auth, sid, aid)
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
@@ -178,7 +180,7 @@ class AssociationAccountView(HoHoView):
         accounts, pagination = slicer(accounts, limit=limit, page=page)()()
         return Result(accounts=accounts, pagination=pagination, association_id=self.auth.get_association_id())
 
-
+    @check_login
     def post(self, request, sid, aid):
         """
         批量获取协会用户信息
@@ -202,6 +204,3 @@ class AssociationAccountView(HoHoView):
                 pass
 
         return Result(data=data, association_id=self.auth.get_association_id())
-
-
-

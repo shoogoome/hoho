@@ -23,6 +23,9 @@ class AssociationPermissionsEntity(EntityBase):
         # 资源仓库模块
         self.repository = PropType.bool(default=False)
 
+        # 考勤模块
+        self.attendance = PropType.bool(default=False)
+
         # 排班模块
         self.scheduling = PropType.bool(default=False)
 

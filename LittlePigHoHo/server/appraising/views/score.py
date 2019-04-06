@@ -11,11 +11,14 @@ from server.association.models import AssociationAccount
 from common.exceptions.association.info import AssociationExcept
 from common.exceptions.appraising.info import AppraisingInfoExcept
 from django.db.models import Q
+from common.core.auth.check_login import check_login
+from common.enum.association.permission import AssociationPermissionEnum
 
 
 class AppraisingScoreView(HoHoView):
 
 
+    @check_login
     def get(self, request, sid, aid, psid):
         """
         获取评分表信息
@@ -26,9 +29,11 @@ class AppraisingScoreView(HoHoView):
         :return:
         """
         logic = AppraisingScoreLogic(self.auth, sid, aid, psid)
+        # logic.check(AssociationPermissionEnum.APPRAISING, AssociationPermissionEnum.ASSOCIATION_VIEW_DATA)
 
         return Result(data=logic.get_score_info(), association_id=self.auth.get_association_id())
 
+    @check_login
     def post(self, request, sid, aid):
         """
         提交评分表
@@ -37,11 +42,12 @@ class AppraisingScoreView(HoHoView):
         :param aid:
         :return:
         """
+        logic = AppraisingScoreLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.APPRAISING, AssociationPermissionEnum.ASSOCIATION_VIEW_DATA)
+
         params = ParamsParser(request.JSON)
         target_id = params.int('target_id', desc='填写对象id')
         content = params.dict('content', desc='评分正文')           # type: dict {"number": "answer"}
-
-        logic = AppraisingScoreLogic(self.auth, sid, aid)
         # 检查目标用户是否符合标准
         if not AssociationAccount.objects.filter(association=logic.association, id=target_id).exists():
             raise AssociationExcept.not_account()
@@ -61,6 +67,7 @@ class AppraisingScoreView(HoHoView):
 
         return Result(id=score.id, association_id=self.auth.get_association_id())
 
+    @check_login
     def put(self, request, sid, aid, psid):
         """
         修改评分表
@@ -72,6 +79,9 @@ class AppraisingScoreView(HoHoView):
         """
         params = ParamsParser(request.JSON)
         logic = AppraisingScoreLogic(self.auth, sid, aid, psid)
+        # if logic.score.author_id != logic.account.id:
+        #     raise AssociationExcept.no_permission()
+
         score = logic.score
 
         if params.has('content'):
@@ -82,6 +92,7 @@ class AppraisingScoreView(HoHoView):
 
         return Result(id=psid, association_id=self.auth.get_association_id())
 
+    @check_login
     def delete(self, request, sid, aid, psid):
         """
         删除评分表
@@ -92,6 +103,8 @@ class AppraisingScoreView(HoHoView):
         :return:
         """
         logic = AppraisingScoreLogic(self.auth, sid, aid, psid)
+        # if logic.score.author_id != logic.account.id:
+        #     logic.check(AssociationPermissionEnum.APPRAISING)
 
         logic.score.delete()
         return Result(id=psid, association_id=self.auth.get_association_id())
@@ -100,6 +113,7 @@ class AppraisingScoreView(HoHoView):
 
 class AppraisingScoreInfo(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid):
         """
         获取评分列表
@@ -109,6 +123,8 @@ class AppraisingScoreInfo(HoHoView):
         :return:
         """
         logic = AppraisingScoreLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
+
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
@@ -135,6 +151,7 @@ class AppraisingScoreInfo(HoHoView):
 
         return Result(scores=scores, pagination=pagination, association_id=self.auth.get_association_id())
 
+    @check_login
     def post(self, request, sid, aid):
         """
         批量获取评分信息
@@ -145,6 +162,7 @@ class AppraisingScoreInfo(HoHoView):
         """
         params = ParamsParser(request.JSON)
         logic = AppraisingScoreLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
 
         ids = params.list('ids', desc='id列表')
         scores = AppraisingScore.objects.get_many(ids=ids)

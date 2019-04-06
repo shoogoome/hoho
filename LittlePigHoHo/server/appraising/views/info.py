@@ -6,10 +6,13 @@ from common.utils.helper.result import Result
 from ..logic.info import AppraisingLogic
 from ..models import AppraisingScoreTemplate
 from common.utils.helper.pagination import slicer
+from common.core.auth.check_login import check_login
+from common.enum.association.permission import AssociationPermissionEnum
 
 
 class AppraisingView(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid, pid):
         """
         获取评分模版信息
@@ -20,9 +23,11 @@ class AppraisingView(HoHoView):
         :return:
         """
         logic = AppraisingLogic(self.auth, sid, aid, pid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
 
         return Result(data=logic.get_score_template_info(), association_id=self.auth.get_association_id())
 
+    @check_login
     def post(self, request, sid, aid):
         """
         创建评分模版
@@ -32,6 +37,7 @@ class AppraisingView(HoHoView):
         :return:
         """
         logic = AppraisingLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
         params = ParamsParser(request.JSON)
         title = params.str('title', desc='标题')
         config = params.list('config', desc='配置（题目配置）')
@@ -47,6 +53,7 @@ class AppraisingView(HoHoView):
 
         return Result(id=template.id, association_id=self.auth.get_association_id())
 
+    @check_login
     def put(self, request, sid, aid, pid):
         """
         修改评分模版信息
@@ -57,6 +64,7 @@ class AppraisingView(HoHoView):
         :return:
         """
         logic = AppraisingLogic(self.auth, sid, aid, pid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
         params = ParamsParser(request.JSON)
         template = logic.score_template
 
@@ -70,6 +78,7 @@ class AppraisingView(HoHoView):
         template.save()
         return Result(id=pid, association_id=self.auth.get_association_id())
 
+    @check_login
     def delete(self, request, sid, aid, pid):
         """
         删除评分模版
@@ -80,6 +89,7 @@ class AppraisingView(HoHoView):
         :return:
         """
         logic = AppraisingLogic(self.auth, sid, aid, pid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
 
         logic.score_template.delete()
         return Result(id=pid, association_id=self.auth.get_association_id())
@@ -88,6 +98,7 @@ class AppraisingView(HoHoView):
 
 class AppraisingInfo(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid):
         """
         获取评分表列表
@@ -97,6 +108,7 @@ class AppraisingInfo(HoHoView):
         :return:
         """
         logic = AppraisingLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
@@ -110,6 +122,7 @@ class AppraisingInfo(HoHoView):
         return Result(templates=templates, pagination=pagination, association_id=self.auth.get_association_id())
 
 
+    @check_login
     def post(self, request, sid , aid):
         """
         批量获取评分表信息
@@ -119,6 +132,7 @@ class AppraisingInfo(HoHoView):
         :return:
         """
         logic = AppraisingLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
         params = ParamsParser(request.JSON)
 
         ids = params.list('ids', desc='id列表')

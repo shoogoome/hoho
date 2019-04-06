@@ -5,11 +5,14 @@ from common.utils.helper.result import Result
 from server.association.models import AssociationAccount
 from ..logic.registra import RegistrationLogic
 from ..models import InterviewRegistration
+from common.enum.association.permission import AssociationPermissionEnum
+from common.core.auth.check_login import check_login
 
 
 class InterviewManage(HoHoView):
     FILTER = True
 
+    @check_login
     def get(self, request, sid, aid):
         """
         发起招新
@@ -19,6 +22,8 @@ class InterviewManage(HoHoView):
         :return:
         """
         logic = RegistrationLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.INTERVIEW)
+
         params = ParamsParser(request.GET)
         template_id = params.int('template_id', desc='使用模板id')
         start_time = params.float('start_time', desc='开始时间')
@@ -40,6 +45,7 @@ class InterviewManage(HoHoView):
 
         return Result(association_id=self.auth.get_association_id(), status="success")
 
+    @check_login
     def post(self, request, sid, aid):
         """
         过滤报名表 or 导入协会
@@ -49,6 +55,7 @@ class InterviewManage(HoHoView):
         :return:
         """
         logic = RegistrationLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.INTERVIEW)
         params = ParamsParser(request.JSON)
         version = logic.get_interview_version()
         status = {}

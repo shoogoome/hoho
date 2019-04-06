@@ -252,59 +252,14 @@ class AttendanceLogic(AssociationLogic):
         return distance * 1000
 
 
+    def check(self, permission):
+        """
+        权限处理
+        :param permission:
+        :return:
+        """
+        # ！为了世界的和平 管理员权限在协会当中并不放行
+        if not self.inspect(permission, attendance=self.attendance):
+            raise AssociationExcept.no_permission()
 
-
-    # def check(self, *permission):
-    #     """
-    #     权限处理
-    #     :param permission:
-    #     :return:
-    #     """
-    #     if self.auth.get_account().role == int(RoleEnum.ADMIN):
-    #         return True
-    #
-    #     if not AttendanceLogic.inspect(self.auth.get_account(), self.assocation,
-    #                                    self.attendance, self.association_logic.ass_acc, *permission):
-    #         raise AssociationExcept.no_permission()
-    #
-    # @staticmethod
-    # def inspect(account, association, attendance, ass_acc=None, *permission):
-    #     """
-    #     权限判断
-    #     :param account:
-    #     :param association:
-    #     :param attendance:
-    #     :param ass_acc:
-    #     :param permission:
-    #     :return:
-    #     """
-    #     a_permission = json.loads(account.permissions)
-    #     ass_permission = json.loads(association.configure)
-    #
-    #     _att = ass_permission.get('attendance', dict())
-    #     _end = attendance.end_time
-    #     _start = attendance.start_time
-    #     _manage = account.id in ass_permission.get('manage', [])
-    #
-    #     if AssociationPermissionEnum.ATTENDANCE in permission:
-    #         if association in account.association.all():
-    #             if _start <= time.time() <= _end:
-    #                 return True
-    #
-    #     # 判断管理员权限
-    #     if _manage or (ass_acc.role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]):
-    #         return True
-    #
-    #     # 检查考勤权限
-    #     if _att is dict():
-    #         return False
-    #
-    #     if AssociationPermissionEnum.ATTENDANCE_VIEW in permission:
-    #         if account.id in _att.get('views', list()):
-    #             return True
-    #
-    #     if AssociationPermissionEnum.ATTENDANCE_MANAGE in permission:
-    #         if account.id in _att.get('manage', list()):
-    #             return True
-    #
-    #     return False
+        return True

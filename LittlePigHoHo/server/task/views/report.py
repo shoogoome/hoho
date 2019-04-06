@@ -11,11 +11,13 @@ from common.utils.helper.pagination import slicer
 from server.association.models import AssociationAccount
 from common.exceptions.association.info import AssociationExcept
 from common.exceptions.task.info import TaskInfoExcept
+from common.core.auth.check_login import check_login
+from common.enum.association.permission import AssociationPermissionEnum
 
 
 class TaskReportView(HoHoView):
 
-
+    @check_login
     def get(self, request, sid, aid, tid):
         """
         获取任务汇报情况
@@ -26,9 +28,12 @@ class TaskReportView(HoHoView):
         :return:
         """
         logic = TaskLogic(self.auth, sid, aid, tid)
+        # if logic.task_report.worker_id != logic.account.id:
+        #     logic.check(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA, AssociationPermissionEnum.TASK)
 
         return Result(data=logic.get_task_report_info())
 
+    @check_login
     def post(self, request, sid, aid, tid):
         """
         接手任务 or 指派任务
@@ -47,6 +52,7 @@ class TaskReportView(HoHoView):
 
         # 指派任务
         if account_id != -1:
+            # logic.check(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA, AssociationPermissionEnum.TASK)
             account = AssociationAccount.objects.get_once(pk=account_id)
             # 过滤协会
             if account is None or account.association_id != logic.association.id:
@@ -64,6 +70,7 @@ class TaskReportView(HoHoView):
 
         return Result(id=tid)
 
+    @check_login
     def put(self, request, sid, aid, tid):
         """
         完成任务
@@ -87,7 +94,7 @@ class TaskReportView(HoHoView):
         report.save()
         return Result(id=tid)
 
-
+    @check_login
     def delete(self, request, sid, aid, tid):
         """
         放弃任务
@@ -106,15 +113,3 @@ class TaskReportView(HoHoView):
         logic.task.save()
 
         return Result(id=tid)
-
-
-
-
-
-
-
-
-
-
-
-

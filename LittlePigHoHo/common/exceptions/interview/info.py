@@ -13,3 +13,11 @@ class InterviewInfoExcept(HoHoExceptBase):
     @classmethod
     def params_require(cls, par):
         return cls("参数{}必填".format(par))
+
+    @classmethod
+    def in_association(cls):
+        return cls("已加入该协会")
+
+    @classmethod
+    def no_permission(cls):
+        return cls("无权限执行此操作")

@@ -8,11 +8,14 @@ from server.association.models import AssociationDepartment
 from common.exceptions.association.department import DepartmentExcept
 from django.db.models import Q
 from common.utils.helper.pagination import slicer
+from common.core.auth.check_login import check_login
+from common.enum.association.permission import AssociationPermissionEnum
+from common.enum.account.role import RoleEnum
 
 
 class TaskInfo(HoHoView):
 
-
+    @check_login
     def get(self, request, sid, aid, tid):
         """
         获取任务表
@@ -24,8 +27,9 @@ class TaskInfo(HoHoView):
         """
         logic = TaskLogic(self.auth, sid, aid, tid)
 
-        return Result(data=logic.get_task_info())
+        return Result(data=logic.get_task_info(), association_id=self.auth.get_association_id())
 
+    @check_login
     def post(self, request, sid, aid):
         """
         发布任务
@@ -35,6 +39,8 @@ class TaskInfo(HoHoView):
         :return:
         """
         logic = TaskLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA, AssociationPermissionEnum.TASK)
+
         params = ParamsParser(request.JSON)
         title = params.str('title', desc='标题')
         content = params.str('content', desc='任务内容')
@@ -59,9 +65,9 @@ class TaskInfo(HoHoView):
             task.department_id = department
             task.save()
             
-        return Result(id=task.id)
+        return Result(id=task.id, association_id=self.auth.get_association_id())
     
-    
+    @check_login
     def put(self, request, sid, aid, tid):
         """
         修改任务详情
@@ -73,6 +79,8 @@ class TaskInfo(HoHoView):
         """
         params = ParamsParser(request.JSON)
         logic = TaskLogic(self.auth, sid, aid, tid)
+        # if logic.task.author_id != logic.account.id:
+        #     raise DepartmentExcept.no_permission()
         task = logic.task
         
         with params.diff(task):
@@ -82,8 +90,9 @@ class TaskInfo(HoHoView):
             task.end_time = params.float('end_time', desc='结束时间')
         task.save()
 
-        return Result(id=tid)
+        return Result(id=tid, association_id=self.auth.get_association_id())
 
+    @check_login
     def delete(self, request, sid, aid, tid):
         """
         删除任务
@@ -94,13 +103,16 @@ class TaskInfo(HoHoView):
         :return:
         """
         logic = TaskLogic(self.auth, sid, aid, tid)
+        # if logic.task.author_id != logic.account.id:
+        #     logic.check(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA, AssociationPermissionEnum.TASK)
 
         logic.task.delete()
-        return Result(id=tid)
+        return Result(id=tid, association_id=self.auth.get_association_id())
 
 
 class TaskView(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid):
         """
         获取任务列表
@@ -109,6 +121,7 @@ class TaskView(HoHoView):
         :param aid:
         :return:
         """
+        logic = TaskLogic(self.auth, sid, aid)
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
@@ -138,9 +151,9 @@ class TaskView(HoHoView):
             return obj
 
         tasks, pagination = get_tasks_list()
-        return Result(tasks=tasks, pagination=pagination)
+        return Result(tasks=tasks, pagination=pagination, association_id=self.auth.get_association_id())
 
-
+    @check_login
     def post(self, request, sid, aid):
         """
         批量获取任务信息
@@ -163,4 +176,4 @@ class TaskView(HoHoView):
             except:
                 pass
 
-        return Result(data=data)
+        return Result(data=data, association_id=self.auth.get_association_id())

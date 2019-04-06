@@ -1,19 +1,16 @@
 import json
 
-from django.http import *
-from common.core.http.view import HoHoView
+from django.db.models import Q
 
 from common.core.auth.check_login import check_login
-from common.enum.account.role import RoleEnum
-from common.utils.helper.m_t_d import model_to_dict
+from common.core.http.view import HoHoView
+from common.decorate.administrators import administrators
+from common.utils.helper.pagination import slicer
 from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
-from server.account.logic.info import AccountLogic
 from ..logic.info import SchoolLogic
-from common.exceptions.school.info import SchoolInfoException
 from ..models import School
-from common.utils.helper.pagination import slicer
-from django.db.models import Q
+
 
 class SchoolView(HoHoView):
 
@@ -28,6 +25,7 @@ class SchoolView(HoHoView):
         return Result(data=logic.get_school_info(), association_id=self.auth.get_association_id())
 
     @check_login
+    # @administrators
     def post(self, request, sid=''):
         """
         创建学校
@@ -46,6 +44,7 @@ class SchoolView(HoHoView):
         return Result(id=school.id, association_id=self.auth.get_association_id())
 
     @check_login
+    # @administrators
     def put(self, request, sid):
         """
         修改学校信息
@@ -72,6 +71,7 @@ class SchoolView(HoHoView):
         return Result(id=school.id, association_id=self.auth.get_association_id())
 
     @check_login
+    # @administrators
     def delete(self, request, sid):
         """
         删除学校
@@ -89,7 +89,6 @@ class SchoolView(HoHoView):
 
 
 class SchoolList(HoHoView):
-
 
     def get(self, request):
         """
@@ -141,6 +140,3 @@ class SchoolList(HoHoView):
             except:
                 pass
         return Result(data=data, association_id=self.auth.get_association_id())
-
-
-

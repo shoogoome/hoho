@@ -61,6 +61,7 @@ class Association(models.Model):
 
     # 最后更新时间
     update_time = TimeStampField(auto_now=True)
+
     # 重构管理器
     objects = HoHoModelManager()
 

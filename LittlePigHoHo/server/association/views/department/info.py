@@ -43,6 +43,7 @@ class DepartmentInfo(HoHoView):
         """
         params = ParamsParser(request.JSON)
         logic = AssociationLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.ASSOCIATION)
 
         name = params.str('name', desc='部门名称')
         short_name = params.str('short_name', desc='缩写')
@@ -61,6 +62,10 @@ class DepartmentInfo(HoHoView):
             description=params.str('description', desc="描述", require=False, default=""),
             association=logic.association
         )
+        # 更新集群状态
+        if not logic.association.colony:
+            logic.association.colony = True
+            logic.association.save()
 
         return Result(id=departmenr.id, association_id=self.auth.get_association_id())
 
@@ -74,9 +79,9 @@ class DepartmentInfo(HoHoView):
         :param did:
         :return:
         """
-        # 添加删除管理员 还没做
         params = ParamsParser(request.JSON)
         logic = DepartmentLogic(self.auth, sid, aid, did)
+        # logic.check(AssociationPermissionEnum.DEPARTMENT)
 
         department = logic.department
 
@@ -117,12 +122,18 @@ class DepartmentInfo(HoHoView):
         :return:
         """
         dlogic = DepartmentLogic(self.auth, sid, aid, did)
+        # dlogic.check(AssociationPermissionEnum.ASSOCIATION)
         dlogic.department.delete()
+        # 无部门则更新集群状态
+        if AssociationDepartment.objects.values('id').filter(association=dlogic.association).count() == 0:
+            dlogic.association.colony = False
+            dlogic.association.save()
 
         return Result(id=did, association_id=self.auth.get_association_id())
 
 class DepartmentView(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid):
         """
         获取协会部门列表
@@ -131,6 +142,8 @@ class DepartmentView(HoHoView):
         :param aid:
         :return:
         """
+        # 自动权限检查
+        logic = AssociationLogic(self.auth, sid, aid)
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
@@ -151,7 +164,7 @@ class DepartmentView(HoHoView):
 
         return Result(departments=departments, pagination=pagination, association_id=self.auth.get_association_id())
 
-
+    @check_login
     def post(self, request, sid, aid):
         """
         批量获取协会部门信息
@@ -190,6 +203,7 @@ class DepartmentMatters(HoHoView):
         :return: {id: status 0-成功 1-非协会成员 2-已加入其他部门 3-未知原因失败}
         """
         logic = DepartmentLogic(self.auth, sid, aid, did)
+        # logic.check(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA)
 
         params = ParamsParser(request.JSON)
         ids = params.list('ids', desc='用户id')

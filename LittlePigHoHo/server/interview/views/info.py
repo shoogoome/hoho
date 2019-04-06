@@ -8,6 +8,7 @@ from common.utils.helper.pagination import slicer
 from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
 from ..logic.info import TemplateLogic
+from common.enum.association.permission import AssociationPermissionEnum
 from ..models import *
 
 
@@ -23,6 +24,7 @@ class RegistrationTemplateInfo(HoHoView):
         :return:
         """
         logic = TemplateLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.INTERVIEW)
 
         params = ParamsParser(request.JSON)
 
@@ -63,6 +65,7 @@ class RegistrationTemplateInfo(HoHoView):
         :return:
         """
         logic = TemplateLogic(self.auth, sid, aid, rtid)
+        # logic.check(AssociationPermissionEnum.INTERVIEW)
         params = ParamsParser(request.JSON)
         template = logic.template
 
@@ -85,6 +88,7 @@ class RegistrationTemplateInfo(HoHoView):
         :return:
         """
         logic = TemplateLogic(self.auth, sid, aid, rtid)
+        # logic.check(AssociationPermissionEnum.INTERVIEW)
         logic.template.delete()
 
         return Result(id=rtid, association_id=self.auth.get_association_id())

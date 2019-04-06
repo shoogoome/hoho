@@ -7,10 +7,13 @@ from server.association.logic.attendance import AttendanceLogic
 from server.association.models import AssociationAccount
 from ..logic.score import AppraisingScoreLogic
 from ..models import AppraisingScoreTemplate, AppraisingScore
+from common.core.auth.check_login import check_login
+from common.enum.association.permission import AssociationPermissionEnum
 
 
 class AppraisingManageView(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid):
         """
         发起评优
@@ -20,6 +23,7 @@ class AppraisingManageView(HoHoView):
         :return:
         """
         logic = AppraisingScoreLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
         params = ParamsParser(request.GET)
         template_id = params.int('template_id', desc='模板id')
 
@@ -41,6 +45,7 @@ class AppraisingManageView(HoHoView):
 
         return Result(association_id=self.auth.get_association_id(), status="success")
 
+    @check_login
     def post(self, request, sid, aid):
         """
         总结评优
@@ -50,6 +55,7 @@ class AppraisingManageView(HoHoView):
         :return:   redis key   appraising:协会id:version
         """
         logic = AppraisingScoreLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.APPRAISING)
         atlogic = AttendanceLogic(self.auth, sid, aid)
         params = ParamsParser(request.JSON)
         version = params.int('version', desc='版本号')

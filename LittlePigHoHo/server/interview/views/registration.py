@@ -6,8 +6,11 @@ from common.utils.helper.pagination import slicer
 from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
 from ..logic.registra import RegistrationLogic
+from server.association.logic.info import AssociationLogic
 from ..models import InterviewRegistration
 import json
+from common.exceptions.interview.info import InterviewInfoExcept
+from common.enum.association.permission import AssociationPermissionEnum
 
 
 class RegistrationInfo(HoHoView):
@@ -22,6 +25,8 @@ class RegistrationInfo(HoHoView):
         :return:
         """
         logic = RegistrationLogic(self.auth, sid, aid)
+        if logic.account is not None:
+            raise InterviewInfoExcept.in_association()
         params = ParamsParser(request.JSON)
         content = params.dict('content', desc='正文信息')
 
@@ -45,6 +50,7 @@ class RegistrationInfo(HoHoView):
         :return:
         """
         logic = RegistrationLogic(self.auth, sid, aid, rid)
+        # logic.check(AssociationPermissionEnum.INTERVIEW)
 
         return Result(data=logic.get_registration_info(), association_id=self.auth.get_association_id())
 
@@ -59,6 +65,8 @@ class RegistrationInfo(HoHoView):
         :return:
         """
         logic = RegistrationLogic(self.auth, sid, aid, rid)
+        # if logic.registration.account.id != self.auth.get_account().id:
+        #     raise InterviewInfoExcept.no_permission()
         logic.registration.delete()
 
         return Result(id=rid, association_id=self.auth.get_association_id())
@@ -66,6 +74,7 @@ class RegistrationInfo(HoHoView):
 
 class RegistrationView(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid):
         """
         获取报名表列表
@@ -74,7 +83,8 @@ class RegistrationView(HoHoView):
         :param aid:
         :return:
         """
-        logic = RegistrationLogic(self.auth, sid, aid)
+        logic = AssociationLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.INTERVIEW)
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
@@ -93,6 +103,7 @@ class RegistrationView(HoHoView):
         registrations, pagination = slicer(registrations, limit=limit, page=page)()()
         return Result(registrations=registrations, pagination=pagination, association_id=self.auth.get_association_id())
 
+    @check_login
     def post(self, request, sid, aid):
         """
         批量获取报名表信息
@@ -102,6 +113,8 @@ class RegistrationView(HoHoView):
         :return:
         """
         logic = RegistrationLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.INTERVIEW)
+
         params = ParamsParser(request.JSON)
         ids = params.list('ids', desc='id列表')
 

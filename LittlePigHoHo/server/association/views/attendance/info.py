@@ -8,7 +8,8 @@ from common.utils.helper.result import Result
 from server.association.logic.attendance import AttendanceLogic
 from server.association.logic.info import AssociationLogic
 from server.association.models import AssociationAttendance
-
+from common.enum.association.permission import AssociationPermissionEnum
+import time
 
 class AttendanceView(HoHoView):
 
@@ -36,6 +37,7 @@ class AttendanceView(HoHoView):
         :return:
         """
         logic = AssociationLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.ATTENDANCE)
         params = ParamsParser(request.JSON)
 
         title = params.str('title', desc='标题')
@@ -74,6 +76,7 @@ class AttendanceView(HoHoView):
         :return:
         """
         logic = AttendanceLogic(self.auth, sid, aid, vid)
+        # logic.check(AssociationPermissionEnum.ATTENDANCE)
         params = ParamsParser(request.JSON)
         attendance = logic.attendance
 
@@ -105,6 +108,7 @@ class AttendanceView(HoHoView):
         :return:
         """
         logic = AttendanceLogic(self.auth, sid, aid, vid)
+        # logic.check(AssociationPermissionEnum.ATTENDANCE)
 
         logic.attendance.delete()
         return Result(id=vid, association_id=self.auth.get_association_id())
@@ -178,6 +182,8 @@ class AttendanceSign(HoHoView):
         :param vid:
         :return:
         """
+        logic = AttendanceLogic(self.auth, sid, aid, vid)
+        # logic.check(AssociationPermissionEnum.ATTENDANCE_SIGN)
         params = ParamsParser(request.GET)
         lx = params.float('lx', desc='纬度')
         ly = params.float('ly', desc='经度')
@@ -200,12 +206,15 @@ class AttendanceSign(HoHoView):
         params = ParamsParser(request.JSON)
         _type = params.int('type', desc='考勤类别', default=0, require=False)   # type: int 0-协会 1-部门 2-个人
 
-        if _type == 0:
-            data = logic.get_association_sign_info()
-        elif _type == 1:
-            data = logic.get_department_sign_info(params.int('department', desc='部门id'))
-        elif _type == 2:
+        data = {}
+        if _type == 2:
             data = logic.get_account_sign_info()
+        else:
+            logic.check(AssociationPermissionEnum.ATTENDANCE)
+            if _type == 0:
+                data = logic.get_association_sign_info()
+            elif _type == 1:
+                data = logic.get_department_sign_info(params.int('department', desc='部门id'))
 
         return Result(data=data, association_id=self.auth.get_association_id())
 
@@ -224,6 +233,8 @@ class AttendanceManage(HoHoView):
         """
         params = ParamsParser(request.GET)
         alogic = AttendanceLogic(self.auth, sid, aid, vid)
+        # if alogic.attendance.end_time < time.time():
+        #     raise AttendanceExcept.no_in_place()
         # 获取协会待办事项
         description = params.str('description', desc='请假事由')
         backlog = AssociationBacklog.parse(alogic.association.backlog)
@@ -246,6 +257,7 @@ class AttendanceManage(HoHoView):
         :return: 0-无此人物待办事项 1-成功
         """
         alogic = AttendanceLogic(self.auth, sid, aid, vid)
+        # alogic.check(AssociationPermissionEnum.ATTENDANCE)
         # 获取待办事项
         backlog = AssociationBacklog.parse(alogic.association.backlog)
         params = ParamsParser(request.JSON)

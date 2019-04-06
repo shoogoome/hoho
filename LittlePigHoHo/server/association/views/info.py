@@ -1,29 +1,28 @@
+from django.db.models import Q
+
 from common.core.auth.check_login import check_login
 from common.core.http.view import HoHoView
-# from common.entity.association.attendance import AssociationAttendanceEntity
+from common.decorate.administrators import administrators
 from common.entity.account.permission import AccountPermissionEntity
 from common.entity.association.config import AssociationConfigureEntity
 from common.enum.account.role import RoleEnum
 from common.enum.association.permission import AssociationPermissionEnum
-from common.utils.helper.m_t_d import model_to_dict
+from common.exceptions.association.info import AssociationExcept
+from common.utils.helper.pagination import slicer
 from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
-from server.school.logic.info import SchoolLogic
+from server.scheduling.models import AssociationCurriculum
 from ..logic.info import AssociationLogic
 from ..models import Association
 from ..models import AssociationAccount
-from django.db.models import Q
-from common.utils.helper.pagination import slicer
-from server.scheduling.models import AssociationCurriculum
-import json
+
 
 class AssociationInfoView(HoHoView):
-
     VERSION = False
 
     def get(self, request, sid, aid):
         """
-        获取协会列表
+        获取协会列表 or 获取评优版本信息
         :param request:
         :param sid:
         :param aid:
@@ -33,8 +32,11 @@ class AssociationInfoView(HoHoView):
 
         # 获取评优版本信息
         if self.VERSION:
+            check_login(lambda x: True)(self)
+            # 敏感数据权限 部长以上即放行
+            # logic.check(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA)
             return Result(data=logic.get_config().version_dict, association_id=self.auth.get_association_id())
-        return Result(logic.get_association_info(), association_id=self.auth.get_association_id())
+        return Result(data=logic.get_association_info(), association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid):
@@ -48,10 +50,10 @@ class AssociationInfoView(HoHoView):
         params = ParamsParser(request.JSON)
         account = self.auth.get_account()
 
-        # 权限检查 暂不进行
-        # alogic = AccountLogic(self.auth, thown=False)
-        # alogic.check(AccountPermissionEnum.CREATE_ASSOCIATION)
-        slogic = SchoolLogic(self.auth, sid)
+        # 权限检查
+        # permission_entity = AccountPermissionEntity.parse(self.auth.get_account().permissions)
+        # if not permission_entity.create():
+        #     raise AssociationExcept.no_permission()
 
         # 创建协会
         config = AssociationConfigureEntity()
@@ -61,8 +63,7 @@ class AssociationInfoView(HoHoView):
             description=params.str('description', desc='简介', require=False, default=''),
             choosing_code=AssociationLogic.elective_code(),
             config=config.dumps(),
-            school=slogic.school,
-            # logo=upload(request.FILES.get('image', None), SCHOOL_LOGO),
+            school=logic.school,
         )
 
         # 创建课表配置
@@ -101,30 +102,27 @@ class AssociationInfoView(HoHoView):
         """
         params = ParamsParser(request.JSON)
         alogic = AssociationLogic(self.auth, sid, aid)
-        # alogic.check(AssociationPermissionEnum.MANAGE)
+        # alogic.check(AssociationPermissionEnum.ASSOCIATION)
         association = alogic.association
 
         with params.diff(association):
             association.name = params.str('name', desc='名称')
             association.short_name = params.str('short_name', desc='缩写')
             association.description = params.str('description', desc='简介')
-            # logo=upload(request.FILES.get('image', None), SCHOOL_LOGO),
             association.save()
 
         return Result(id=association.id, association_id=self.auth.get_association_id())
 
     @check_login
+    # @administrators
     def delete(self, request, sid, aid):
         """
-        删除协会
+        删除协会  仅系统管理员有权限删除协会
         :param request:
         :param sid:
         :param aid:
         :return:
         """
-        # if self.auth.get_account().role != int(RoleEnum.ADMIN):
-        #     raise AssociationExcept.no_permission()
-
         alogic = AssociationLogic(self.auth, sid, aid)
         alogic.association.delete()
 
@@ -132,10 +130,8 @@ class AssociationInfoView(HoHoView):
 
 
 class AssociationVerification(HoHoView):
-
     LIST = False
 
-    @check_login
     def get(self, request, sid, aid=""):
         """
         重置协会码 or 获取协会列表
@@ -146,8 +142,9 @@ class AssociationVerification(HoHoView):
         """
         # 重置协会码
         if not self.LIST:
+            check_login(lambda x: True)(self)
             logic = AssociationLogic(self.auth, sid, aid)
-            # logic.check(AssociationPermissionEnum.MANAGE)
+            # logic.check(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA)
 
             logic.association.choosing_code = AssociationLogic.elective_code()
             logic.association.save()
@@ -165,15 +162,7 @@ class AssociationVerification(HoHoView):
                 Q(short_name__contains=key)
             )
 
-        @slicer(
-            associations,
-            limit=limit,
-            page=page
-        )
-        def get_associations_list(obj):
-            return obj
-
-        associations, pagination = get_associations_list()
+        associations, pagination = slicer(associations, limit=limit, page=page)()()
         return Result(associations=associations, pagination=pagination, association_id=self.auth.get_association_id())
 
     def post(self, request, sid):
@@ -198,12 +187,3 @@ class AssociationVerification(HoHoView):
                 pass
 
         return Result(data=data, association_id=self.auth.get_association_id())
-
-
-
-
-
-
-
-
-

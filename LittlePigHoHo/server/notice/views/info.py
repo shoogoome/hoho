@@ -7,11 +7,13 @@ from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
 from server.association.models import AssociationDepartment
 from ..logic.notice import NoticeLogic
+from common.core.auth.check_login import check_login
 from ..models import AssociationNotice
-
+from common.enum.association.permission import AssociationPermissionEnum
 
 class NoticeInfo(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid, nid):
         """
         获取通知信息
@@ -25,6 +27,7 @@ class NoticeInfo(HoHoView):
 
         return Result(data=logic.get_notice_info(), association_id=self.auth.get_association_id())
 
+    @check_login
     def post(self, request, sid, aid):
         """
         创建通知信息  协会 or 部门
@@ -34,6 +37,8 @@ class NoticeInfo(HoHoView):
         :return:
         """
         logic = NoticeLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.NOTICE)
+
         params = ParamsParser(request.JSON)
         title = params.str('title', desc='标题')
         content = params.str('content', desc='正文')
@@ -59,6 +64,7 @@ class NoticeInfo(HoHoView):
 
         return Result(id=notice.id, association_id=self.auth.get_association_id())
 
+    @check_login
     def put(self, request, sid, aid, nid):
         """
         修改通知信息
@@ -70,6 +76,7 @@ class NoticeInfo(HoHoView):
         """
         params = ParamsParser(request.JSON)
         logic = NoticeLogic(self.auth, sid, aid, nid)
+        # logic.check(AssociationPermissionEnum.NOTICE)
         notice = logic.notice
 
         with params.diff(notice):
@@ -82,6 +89,7 @@ class NoticeInfo(HoHoView):
 
         return Result(id=nid, association_id=self.auth.get_association_id())
 
+    @check_login
     def delete(self, auth, sid, aid, nid):
         """
         删除通知信息
@@ -92,6 +100,7 @@ class NoticeInfo(HoHoView):
         :return:
         """
         logic = NoticeLogic(self.auth, sid, aid, nid)
+        # logic.check(AssociationPermissionEnum.NOTICE)
         logic.notice.delete()
 
         return Result(id=nid, association_id=self.auth.get_association_id())
@@ -99,6 +108,7 @@ class NoticeInfo(HoHoView):
 
 class NoticeView(HoHoView):
 
+    @check_login
     def get(self, request, sid, aid):
         """
         获取通知列表
@@ -107,6 +117,7 @@ class NoticeView(HoHoView):
         :param aid:
         :return:
         """
+        logic = NoticeLogic(self.auth, sid, aid)
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
@@ -135,6 +146,7 @@ class NoticeView(HoHoView):
         notices, pagination = get_notice_list()
         return Result(notices=notices, pagination=pagination, association_id=self.auth.get_association_id())
 
+    @check_login
     def post(self, request, sid, aid):
         """
         批量获通知信息

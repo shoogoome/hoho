@@ -3,7 +3,8 @@ from common.exceptions.interview.info import InterviewInfoExcept
 from common.utils.helper.m_t_d import model_to_dict
 from server.association.logic.info import AssociationLogic
 from ..models import InterviewRegistration, InterviewRegistrationTemplate
-
+from server.association.models import AssociationAccount
+from common.exceptions.association.info import AssociationExcept
 
 class RegistrationLogic(AssociationLogic):
     FIELD = [
@@ -25,6 +26,17 @@ class RegistrationLogic(AssociationLogic):
             self.registration = rid
         else:
             self.registration = self.get_registration(rid)
+
+    def get_association_account(self):
+        """
+        获取人事表
+        :return:
+        """
+        account = AssociationAccount.objects.filter_cache(
+            account=self.auth.get_account(), association=self.association)
+        if account is None or len(account) == 0:
+            return None
+        return account
 
     def get_registration(self, rid):
         """

@@ -9,6 +9,7 @@ from ...models import AssociationAccountCurriculum
 from ...logic.redis import SchedulingRedis
 from server.association.models import AssociationAccount
 import json
+from common.enum.association.permission import AssociationPermissionEnum
 
 
 class CurriculumInfo(HoHoView):
@@ -25,6 +26,7 @@ class CurriculumInfo(HoHoView):
         """
         logic = CurriculumLogic(self.auth, sid, aid)
         if self.RESET:
+            # logic.check(AssociationPermissionEnum.SCHEDULING)
             logic.curriculum.content = logic.get_school_curriculum_config().dumps()
             logic.curriculum.save()
             return Result(association_id=self.auth.get_association_id())
@@ -41,6 +43,7 @@ class CurriculumInfo(HoHoView):
         :return: 
         """
         logic = CurriculumLogic(self.auth, sid, aid)
+        # logic.check(AssociationPermissionEnum.SCHEDULING)
         params = ParamsParser(request.JSON)
         curriculum = logic.curriculum
 
@@ -58,6 +61,7 @@ class CurriculumView(HoHoView):
 
     SUMMARY = False
 
+    @check_login
     def post(self, request, sid, aid):
         """
         填写课表
@@ -97,7 +101,7 @@ class CurriculumView(HoHoView):
 
         return Result(id=curriculum.id, association_id=self.auth.get_association_id())
 
-
+    @check_login
     def get(self, request, sid, aid):
         """
         汇总无课表 or 获取课表信息
@@ -114,6 +118,7 @@ class CurriculumView(HoHoView):
             return Result(data=logic.get_account_curriculum_info(), association_id=self.auth.get_association_id())
 
         # 汇总无课表  不包括退休人员
+        # logic.check(AssociationPermissionEnum.SCHEDULING)
         _id = str(logic.association.id)
         if redis.exists(_id):
             data = json.loads(redis.get(_id).decode())

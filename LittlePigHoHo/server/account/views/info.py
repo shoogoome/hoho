@@ -15,7 +15,9 @@ from common.utils.helper.params import ParamsParser
 from common.utils.helper.result import Result
 from ..logic.info import AccountLogic
 from ..models import Account
+from common.decorate.administrators import administrators
 from common.enum.account.sex import SexEnum
+
 
 
 class AccountView(HoHoView):
@@ -77,9 +79,9 @@ class AccountView(HoHoView):
         if self.STATUS:
             logic = AccountLogic(self.auth, self.auth.get_account())
         else:
-            # 权限控制
+            # 权限控制  管理员
             logic = AccountLogic(self.auth, aid)
-            # logic.check(AccountPermissionEnum.VIEWS)
+            # administrators(lambda x: True)(self)
 
         return Result(data=logic.get_account_info(), association_id=self.auth.get_association_id())
 
@@ -140,7 +142,8 @@ class InfoView(HoHoView):
     LIST = False
 
     @check_login
-    def get(self, request, aid):
+    # @administrators
+    def get(self, request, aid=''):
         """
         提权（创建协会权限）or 获取用户列表
         :param request:
@@ -148,10 +151,7 @@ class InfoView(HoHoView):
         :return:
         """
         if not self.LIST:
-            # 权限控制
             alogic = AccountLogic(self.auth, aid)
-            if self.auth.get_account().role != int(RoleEnum.ADMIN):
-                raise AccountInfoExcept.no_permission()
 
             permissions = AccountPermissionEntity.parse(alogic.account.permissions)
             permissions.create = True
@@ -185,6 +185,8 @@ class InfoView(HoHoView):
         accounts, pagination = get_account_list()
         return Result(accounts=accounts, pagination=pagination, association_id=self.auth.get_association_id())
 
+    @check_login
+    # @administrators
     def post(self, request):
         """
         批量获取用户信息
@@ -238,6 +240,7 @@ class Login(HoHoView):
 
         return Result(id=account.id, association_id=self.auth.get_association_id())
 
+    @check_login
     def get(self, request):
         """
         切换协会id

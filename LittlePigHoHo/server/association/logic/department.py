@@ -40,9 +40,9 @@ class DepartmentLogic(AssociationLogic):
         if did == "" or did is None:
             return None
         departments = AssociationDepartment.objects.get_once(pk=did)
-        if departments is not None or departments.association_id != self.association.id:
-            return departments
-        raise DepartmentExcept.department_not_found()
+        if departments is None or departments.association_id != self.association.id:
+            raise DepartmentExcept.department_not_found()
+        return departments
 
     def get_department_info(self):
         """
@@ -51,49 +51,14 @@ class DepartmentLogic(AssociationLogic):
         """
         return model_to_dict(self.department, self.NOMAL_FILE)
 
+    def check(self, permission):
+        """
+        权限处理
+        :param permission:
+        :return:
+        """
+        # ！为了世界的和平 管理员权限在协会当中并不放行
+        if not self.inspect(permission, department=self.department):
+            raise DepartmentExcept.no_permission()
 
-
-    # def check(self, *permission):
-    #     """
-    #     权限处理
-    #     :param permission:
-    #     :return:
-    #     """
-    #     if self.auth.get_account().role == int(RoleEnum.ADMIN):
-    #         return True
-    #
-    #     if not DepartmentLogic.inspect(self.auth.get_account(), self.association,
-    #                                    self.department, self.associationLogic.ass_acc, *permission):
-    #         raise DepartmentExcept.no_permission()
-
-    # @staticmethod
-    # def inspect(account, association, department, ass_acc=None, *permission):
-    #     """
-    #     权限判断
-    #     :param account:
-    #     :param association:
-    #     :param department:
-    #     :param ass_acc:
-    #     :param permission:
-    #     :return:
-    #     """
-    #     dep_permission = json.loads(department.permissions)
-    #
-    #     role = ass_acc.role if ass_acc is not None else None
-    #     _manage = account.id in dep_permission.get('manage', [])
-    #
-    #     if AssociationPermissionEnum.DEPARTMENT_VIEW in permission:
-    #         if ass_acc is not None and ass_acc.department is department:
-    #             return True
-    #
-    #     # 判断删除部门权限
-    #     if AssociationPermissionEnum.DEPARTMENT_DELETE in permission:
-    #         if role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]:
-    #             return True
-    #
-    #     # 判断管理部门权限
-    #     if AssociationPermissionEnum.DEPARTMENT_MANAGE in permission:
-    #         if _manage or (role in [int(RoleEnum.TEACHER), int(RoleEnum.PRESIDENT)]):
-    #             return True
-    #
-    #     return False
+        return True

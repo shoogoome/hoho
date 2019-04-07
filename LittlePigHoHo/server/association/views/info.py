@@ -194,6 +194,7 @@ class AssociationVerification(HoHoView):
         for association in associations:
             try:
                 logic.association = association
+                logic.account = logic.get_association_account()
                 data.append(logic.get_association_info())
             except:
                 pass

@@ -62,7 +62,7 @@ class AssociationLogic(SchoolLogic):
             account=self.auth.get_account(), association=self.association)
         if account is None or len(account) == 0:
             raise AssociationExcept.no_permission()
-        return account
+        return account[0]
 
     def get_association_info(self):
         """

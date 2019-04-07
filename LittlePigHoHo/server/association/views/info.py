@@ -56,9 +56,13 @@ class AssociationInfoView(HoHoView):
         #     raise AssociationExcept.no_permission()
 
         # 创建协会
+        name = params.str('name', desc='名称')
+        if Association.objects.values('id').filter(school__id=sid, name=name).exists():
+            raise AssociationExcept.name_exists()
+
         config = AssociationConfigureEntity()
         association = Association.objects.create(
-            name=params.str('name', desc='名称'),
+            name=name,
             short_name=params.str('short_name', desc='缩写', require=False, default=''),
             description=params.str('description', desc='简介', require=False, default=''),
             choosing_code=AssociationLogic.elective_code(),
@@ -157,10 +161,18 @@ class AssociationVerification(HoHoView):
 
         if params.has('key'):
             key = params.str('key', desc='关键字 名称 缩写')
-            associations = associations.filter(
-                Q(name__contains=key) |
-                Q(short_name__contains=key)
-            )
+            try:
+                key = int(key)
+                associations = associations.filter(
+                    Q(name__contains=key) |
+                    Q(short_name__contains=key) |
+                    Q(id=key)
+                )
+            except:
+                associations = associations.filter(
+                    Q(name__contains=key) |
+                    Q(short_name__contains=key)
+                )
 
         associations, pagination = slicer(associations, limit=limit, page=page)()()
         return Result(associations=associations, pagination=pagination, association_id=self.auth.get_association_id())

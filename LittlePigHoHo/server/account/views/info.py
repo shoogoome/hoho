@@ -18,7 +18,7 @@ from ..models import Account
 from common.decorate.administrators import administrators
 from common.enum.account.sex import SexEnum
 
-
+from server.association.models import AssociationAccount
 
 class AccountView(HoHoView):
 
@@ -47,6 +47,7 @@ class AccountView(HoHoView):
                     temp_access_token=openid,
                     role=int(RoleEnum.DIRECTOR),
                     permissions=AccountPermissionEntity().dumps(),
+                    motto="这个人很懒，什么jb都没有"
                 )
                 _id = account.id
             except:
@@ -82,8 +83,13 @@ class AccountView(HoHoView):
             # 权限控制  管理员
             logic = AccountLogic(self.auth, aid)
             # administrators(lambda x: True)(self)
-
-        return Result(data=logic.get_account_info(), association_id=self.auth.get_association_id())
+        info = logic.get_account_info()
+        # 已加入协会id
+        info['associations'] = [{
+            "association_id": account.association_id,
+            "role": account.role
+        } for account in AssociationAccount.objects.filter_cache(account=self.auth.get_account())]
+        return Result(data=info, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, aid=''):
@@ -93,7 +99,7 @@ class AccountView(HoHoView):
         :param aid:
         :return:
         """
-        params = ParamsParser(request.JOSN)
+        params = ParamsParser(request.JSON)
         is_admin = False
 
         if self.auth.get_account().role == int(RoleEnum.ADMIN):

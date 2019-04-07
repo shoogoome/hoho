@@ -43,7 +43,7 @@ attendance_urlpatterns = [
 urlpatterns = [
     # 协会
     path('', AssociationInfoView.as_view(method=['POST'])),
-    path('/list', AssociationInfoView.as_view(method=['GET'])),
+    path('/list', AssociationVerification.as_view(method=['GET'], LIST=True)),
     path('/_mget', AssociationVerification.as_view(method=['POST'])),
     path('/<int:aid>', AssociationInfoView.as_view(method=['GET', 'PUT', 'DELETE'])),
     path('/<int:aid>/recode', AssociationVerification.as_view(method=['GET'])),

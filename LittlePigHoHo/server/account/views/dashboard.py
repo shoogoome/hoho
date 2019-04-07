@@ -26,13 +26,13 @@ class AccountDashboard(HoHoView):
     @check_login
     def get(self, request):
         """
-        获取相关事项
+        获取相关事项 or 获取加入的协会
         :param request:
         :return:
         """
         # 获取所有参加协会账户
         accounts = AssociationAccount.objects.filter(account=self.auth.get_account())
-
+        # 获取相关事项
         _time = time.time()
 
         data = {

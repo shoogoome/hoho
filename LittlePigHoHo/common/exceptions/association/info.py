@@ -26,3 +26,7 @@ class AssociationExcept(HoHoExceptBase):
     @classmethod
     def department_not_exist(cls):
         return cls("该部门非协会内部部门")
+
+    @classmethod
+    def name_exists(cls):
+        return cls("该名称已存在")

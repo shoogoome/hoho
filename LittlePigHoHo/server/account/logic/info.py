@@ -10,7 +10,8 @@ from common.utils.helper.m_t_d import model_to_dict
 class AccountLogic(object):
 
     NORMAL_FILES = [
-        'nickname', 'realname', 'sex', 'avator', 'motto', 'permissions'
+        'nickname', 'realname', 'sex', 'avator', 'motto', 'permissions', 'phone', 'email',
+        'email_validated', 'role', 'phone_validated', 'update_time'
     ]
 
     def __init__(self, auth, aid='', thown=True):

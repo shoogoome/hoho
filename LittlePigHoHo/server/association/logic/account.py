@@ -7,7 +7,7 @@ from common.utils.helper.m_t_d import model_to_dict
 class AssociationAccountLogic(AssociationLogic):
 
     FIELD = [
-        'nickanme', 'association', 'association__id', 'association__name',
+        'nickname', 'association', 'association__id', 'association__name',
         'department', 'department__id', 'department__name', 'role',
         'permissions', 'retire', 'id'
     ]

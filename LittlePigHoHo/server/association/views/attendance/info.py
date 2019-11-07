@@ -10,6 +10,9 @@ from server.association.logic.info import AssociationLogic
 from server.association.models import AssociationAttendance
 from common.enum.association.permission import AssociationPermissionEnum
 import time
+from common.enum.account.role import RoleEnum
+from ...logic.redis import AttendanceRedisFactory
+from django.db.models import Q
 
 class AttendanceView(HoHoView):
 
@@ -23,9 +26,19 @@ class AttendanceView(HoHoView):
         :param vid:
         :return:
         """
+        redis = AttendanceRedisFactory()
         logic = AttendanceLogic(self.auth, sid, aid, vid)
-
-        return Result(data=logic.get_attendance_info(), association_id=self.auth.get_association_id())
+        info = logic.get_attendance_info()
+        _deparment_id = "-1" if logic.account.department is None else logic.account.department_id
+        _aid = logic.account.id
+        _status = redis.hget(
+            logic.build_key(logic.attendance.id, _deparment_id),
+            _aid
+        )
+        if _status is None:
+            _status = -1
+        info["attendance_status"] = _status
+        return Result(data=info, association_id=self.auth.get_association_id())
 
     @check_login
     def post(self, request, sid, aid):
@@ -62,6 +75,9 @@ class AttendanceView(HoHoView):
             start_time=start_time,
             end_time=end_time,
         )
+        _department = logic.account.department
+        if logic.account.role == int(RoleEnum.MINISTER) and _department is not None:
+            association.department = _department
 
         return Result(id=association.id, association_id=self.auth.get_association_id())
 
@@ -83,8 +99,9 @@ class AttendanceView(HoHoView):
         # 过滤标题
         if params.has('title'):
             title = params.str('title', desc='标题')
-            if AssociationAttendance.objects.filter(association=logic.association, title=title).exists():
+            if AssociationAttendance.objects.filter(title=title, association=logic.association).exclude(id=attendance.id).exists():
                 raise AttendanceExcept.title_exist()
+            attendance.title = title
 
         with params.diff(attendance):
             attendance.description = params.str('description', desc='描述')
@@ -128,9 +145,12 @@ class AttendanceInfo(HoHoView):
         params = ParamsParser(request.GET)
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
+        logic = AssociationLogic(self.auth, sid, aid)
 
-        attendances = AssociationAttendance.objects.values('id', 'update_time').filter(association__id=aid)
-
+        attendances = AssociationAttendance.objects.values('id', 'update_time').filter(association__id=aid).filter(
+            Q(department__isnull=True) |
+            Q(department=logic.account.department)
+        )
         if params.has('title'):
             attendances = attendances.filter(title__contains=params.str('title', desc='标题'))
         if params.has('start_time'):
@@ -154,16 +174,27 @@ class AttendanceInfo(HoHoView):
         :param aid:
         :return:  -1-尚未开始 0-已经结束 1-正在进行
         """
+        redis = AttendanceRedisFactory()
         params = ParamsParser(request.JSON)
         logic = AttendanceLogic(self.auth, sid, aid)
         ids = params.list('ids', desc='考勤表id')
 
         data = list()
         attendances = AssociationAttendance.objects.get_many(ids=ids)
+        _deparment_id = "-1" if logic.account.department is None else logic.account.department_id
+        _aid = logic.account.id
         for attendance in attendances:
             logic.attendance = attendance
             try:
-                data.append(logic.get_attendance_info())
+                info = logic.get_attendance_info()
+                _status = redis.hget(
+                    logic.build_key(logic.attendance.id, _deparment_id),
+                    _aid
+                )
+                if _status is None:
+                    _status = -1
+                info["attendance_status"] = _status
+                data.append(info)
             except:
                 pass
 
@@ -210,7 +241,7 @@ class AttendanceSign(HoHoView):
         if _type == 2:
             data = logic.get_account_sign_info()
         else:
-            logic.check(AssociationPermissionEnum.ATTENDANCE)
+            # logic.check(AssociationPermissionEnum.ATTENDANCE)
             if _type == 0:
                 data = logic.get_association_sign_info()
             elif _type == 1:
@@ -222,7 +253,7 @@ class AttendanceSign(HoHoView):
 class AttendanceManage(HoHoView):
 
     @check_login
-    def get(self, request, sid, aid, vid):
+    def post(self, request, sid, aid, vid):
         """
         发起请假
         :param request:
@@ -231,7 +262,7 @@ class AttendanceManage(HoHoView):
         :param vid:
         :return:
         """
-        params = ParamsParser(request.GET)
+        params = ParamsParser(request.JSON)
         alogic = AttendanceLogic(self.auth, sid, aid, vid)
         # if alogic.attendance.end_time < time.time():
         #     raise AttendanceExcept.no_in_place()
@@ -239,12 +270,51 @@ class AttendanceManage(HoHoView):
         description = params.str('description', desc='请假事由')
         backlog = AssociationBacklog.parse(alogic.association.backlog)
         # key: [人事id][考勤表id] = 请假事由
-        backlog.attendance[str(alogic.account.id)][str(vid)] = description
+        _attendance = backlog.attendance()
+
+        if str(vid) in _attendance:
+            if str(alogic.account.id) in _attendance[str(vid)]["data"]:
+                _attendance[str(vid)]["data"][str(alogic.account.id)]["description"] = description
+            else:
+                _attendance[str(vid)]["data"][str(alogic.account.id)] = {
+                        "name": alogic.account.nickname,
+                        "description": description
+                }
+        else:
+            _attendance[str(vid)] = {
+                "name": alogic.attendance.title,
+                "data": {
+                    str(alogic.account.id): {
+                        "name": alogic.account.nickname,
+                        "description": description
+                    }
+                }
+            }
+
+        """
+                {
+                    attendance: {
+                        "考勤id": {
+                            "name": "考勤名字",
+                            "data": {
+                                "人id": {
+                                    "name": "名字",
+                                    "description": "请假事由"
+                                }
+                            }
+                        }
+                    }
+                }
+        """
+
+        backlog.attendance = _attendance
         # 更新数据库
         alogic.association.backlog = backlog.dumps()
         alogic.association.save()
 
         return Result(id=vid, association_id=self.auth.get_association_id())
+
+class AttendanceManager(HoHoView):
 
     @check_login
     def post(self, request, sid, aid, vid):
@@ -260,22 +330,30 @@ class AttendanceManage(HoHoView):
         # alogic.check(AssociationPermissionEnum.ATTENDANCE)
         # 获取待办事项
         backlog = AssociationBacklog.parse(alogic.association.backlog)
+        # backlog = backlog.dump()
         params = ParamsParser(request.JSON)
 
         data = params.dict('data', desc='处理情况')
         result = {}
-        for aid in data:
-            # 不存在该账户
-            if backlog.attendance.get(aid, None) is None:
-                result[aid] = 0
-                continue
-            # 删除kv
-            del backlog.attendance[str(aid)][str(vid)]
+
+        attendance = backlog.attendance()
+        if str(vid) not in backlog.attendance():
+            return Result(status=result)
+
+        for aid, vl in data.items():
+            if str(aid) in attendance[str(vid)]["data"] and vl:
+                if vl:
+                    alogic.sign_or_leave(leave=(True, str(aid)))
+                del attendance[str(vid)]["data"][str(aid)]
+
             # redis缓存更新
             alogic.sign_or_leave(leave=(True, aid))
             result[aid] = 1
         # 更新数据库
+        backlog.attendance = attendance
         alogic.association.backlog = backlog.dumps()
         alogic.association.save()
 
         return Result(status=result, association_id=self.auth.get_association_id())
+
+

@@ -1,34 +1,39 @@
 #!/bin/bash
+
+basepath=$(cd `dirname $0`; pwd)'/images'
 case $1 in
-    "up")
-    docker-compose up -d
-    ;;
     "build")
-    docker-compose build
+    # server
+    docker build -t hoho-server ${basepath}'/server'
+    docker build -t hoho-mysql ${basepath}'/mysql'
+    docker build -t hoho-redis ${basepath}'/redis'
+    docker build -t hoho-redis-secondary ${basepath}'/hoho-redis-secondary'
+    docker build -t hoho-web ${basepath}'/web'
+    ;;
+    "up")
+    if [ $2 == "dev" ]
+    then
+        docker stack deploy --compose-file docker-stack-dev.yml 'hoho'
+    else
+        docker stack deploy --compose-file docker-stack.yml 'hoho'
+    fi
     ;;
     "down")
-    docker-compose down
+    docker stack rm 'hoho'
     ;;
-    "restart")
-    docker-compose restart
+    "ps")
+    docker stack ps 'hoho'
     ;;
-    "manage")
-    docker-compose exec server python3 /root/LittlePigHoHo/manage.py ${@:2}
-    ;;
-    "supervisor")
-    docker-compose exec server supervisorctl ${@:2}
-    ;;
-    "bash")
-    docker-compose exec $2 bash 
-    ;;
-    "logs")
-    docker-compose logs --tail=10 -f
+    "service")
+    docker stack services 'hoho'
     ;;
     "update")
     zip -r hoho.zip LittlePigHoHo
     scp hoho.zip root@39.108.229.132:/root/hoho
     rm -rf hoho.zip
     ;;
-    "collect")
-    docker-compose exec server python3 /root/LittlePigHoHo/manage.py collectstatic
-esac
+    "pass")
+    zip -r LittlePigHoHo.zip /Users/lzl/Documents/project/LittlePigHoHo /Users/lzl/Documents/project/redis-cluster
+    scp LittlePigHoHo.zip root@39.108.229.132:/root
+    rm -rf LittlePigHoHo.zip
+esac 

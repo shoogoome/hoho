@@ -64,7 +64,7 @@ class AppraisingManageView(HoHoView):
         name = "{}:{}".format(logic.association.id, version)
         # 获取缓存数据
         if redis.exists(name):
-            data = {k.decode(): float(v.decode()) for k, v in redis.hgetall(name).items()}
+            data = {k: v for k, v in redis.get_json(name).items()}
         else:
             config = logic.get_config()
             version_config = config.version_dict().get(str(version), None)
@@ -87,9 +87,9 @@ class AppraisingManageView(HoHoView):
             data = {}
             for score in scores:
                 _id = str(score.target_id)
-                status = _status[_id]
+                status = _status.get(_id, (0, 0))
                 # 考勤分数
-                score_att = attendance_proportion * ((status[0] + status[1]) / total) * 100
+                score_att = 0 if status[0] + status[1] == 0 else attendance_proportion * ((status[0] + status[1]) / total) * 100
 
                 # 总分
                 data[str(score.target.nickname)] = float(
@@ -98,6 +98,6 @@ class AppraisingManageView(HoHoView):
 
             data['completion'] = len(scores) / accounts.count()
             # 数据缓存 时间一周
-            redis.hmset(name, data)
+            redis.set_json(name, data)
 
         return Result(data=data, association_id=self.auth.get_association_id())

@@ -19,6 +19,9 @@ from common.decorate.administrators import administrators
 from common.enum.account.sex import SexEnum
 
 from server.association.models import AssociationAccount
+from faker import Faker
+import base64
+import hashlib
 
 class AccountView(HoHoView):
 
@@ -37,9 +40,9 @@ class AccountView(HoHoView):
 
         accounts = Account.objects.filter_cache(temp_access_token=openid)
         if len(accounts) == 0:
+            nickname = params.str('nickname', desc='昵称')
+            sex = params.int('sex', desc='性别')
             try:
-                nickname = params.str('nickname', desc='昵称')
-                sex = params.int('sex', desc='性别')
                 account = Account.objects.create(
                     realname=nickname,
                     nickname=nickname,
@@ -51,7 +54,19 @@ class AccountView(HoHoView):
                 )
                 _id = account.id
             except:
-                raise AccountInfoExcept.account_filter_error()
+                fake = Faker(locale='zh_CN')
+                p = fake.profile()
+                nickname = p.get('name', "****")
+                account = Account.objects.create(
+                    realname=nickname,
+                    nickname=nickname,
+                    sex=sex,
+                    temp_access_token=openid,
+                    role=int(RoleEnum.DIRECTOR),
+                    permissions=AccountPermissionEntity().dumps(),
+                    motto="这个人很懒，什么jb都没有"
+                )
+                _id = account.id
         else:
             account = accounts[0]
             _id = account.id
@@ -84,6 +99,7 @@ class AccountView(HoHoView):
             logic = AccountLogic(self.auth, aid)
             # administrators(lambda x: True)(self)
         info = logic.get_account_info()
+        if self.STATUS: info['school_id'] = self.auth.get_school_id()
         # 已加入协会id
         info['associations'] = [{
             "association_id": account.association_id,
@@ -219,6 +235,8 @@ class InfoView(HoHoView):
 # !!!!! 仅仅为开发使用 !!!!!
 class Login(HoHoView):
 
+    WEB = False
+
     def post(self, request):
         """
         开发登陆接口
@@ -240,24 +258,30 @@ class Login(HoHoView):
                 raise AccountInfoExcept.account_filter_error()
         else:
             account = accounts[0]
-        # 载入登陆信息
-        self.auth.set_account(account)
-        self.auth.set_session()
 
-        return Result(id=account.id, association_id=self.auth.get_association_id())
+        self.auth.set_account(account)
+
+        if self.WEB:
+            self.auth.set_session()
+            return Result(id=account.id)
+
+        return Result(data={
+            "id": account.id,
+            "token": self.auth.create_token()
+        }, association_id=self.auth.get_association_id())
 
     @check_login
     def get(self, request):
         """
-        切换协会id
+        切换学校id
         :param request:
         :return:
         """
         params = ParamsParser(request.GET)
-        code = params.int('association_id', desc='协会id')
+        code = params.int('school_id', desc='协会id')
 
         try:
-            self.auth.update_association_id(code)
+            self.auth.update_school_id(code)
         except:
             raise AccountInfoExcept.error()
 

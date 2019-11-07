@@ -4,7 +4,7 @@ from ..models import AppraisingScore, AppraisingScoreTemplate
 from common.utils.helper.m_t_d import model_to_dict
 from common.exceptions.appraising.info import AppraisingInfoExcept
 from common.entity.appraising.template import AppraisingTemplateEntity
-from common.core.dao.redis import RedisFactory
+from common.core.dao.redis import RedisClusterFactory
 from .redis import AppraisingRedis
 import json
 
@@ -104,7 +104,7 @@ class AppraisingScoreLogic(AssociationLogic):
         for _config in t_config:
             length = len(_config.get('answer', []))
             try:
-                total_score += _config.get('score', 0) * (((length - _config.get('answer', []).index(content.get(str(_config.get('number', 0)), -1))) / length))
+                total_score += _config.get('score', 0) * ((length - _config.get('answer', []).index(content.get(str(_config.get('number', 0)), -1))) / length)
             except:
                 pass
 

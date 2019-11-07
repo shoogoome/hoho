@@ -5,7 +5,7 @@ import json
 import time
 
 from .authModel import HoHoAuthorization
-from ..dao.redis import get_redis_conn
+from ..dao.redis import RedisClusterFactory
 from ...constants import params
 
 
@@ -23,8 +23,9 @@ class HoHoClientAuthorization(HoHoAuthorization):
         super(HoHoClientAuthorization, self).__init__(request=request, view=view)
         self.request = request
         self.view = view
-        self.__redis = get_redis_conn(params.SESSION_DATABASES)
+        self.__redis = RedisClusterFactory("Session", params.SESSION_EFFECTIVE_TIME)
         self.__effective_time = params.SESSION_EFFECTIVE_TIME
+        self.__school_time = params.SCHOOL_ID_SESSION_EFFECTIVE_TIME_TIME
 
         self.auth_by_token()
 
@@ -41,15 +42,14 @@ class HoHoClientAuthorization(HoHoAuthorization):
                 return False
             token_info = base64.b64decode(token_info).decode('utf-8')
             token_info = json.loads(token_info)
-
             effective_time = float(token_info.get('effective_time', 0))
             if time.time() > effective_time:
                 self.__redis.delete(token_key)
                 return False
 
             account_id = token_info.get('account_id', '')
-            self._association_id = self.__redis.get(token).decode()
             if self.set_login_status(account_id):
+                self._school_id = self.__redis.get("{}@{}".format(self.__school_time, account_id))
                 return True
             else:
                 self.__redis.delete(token_key)
@@ -57,19 +57,15 @@ class HoHoClientAuthorization(HoHoAuthorization):
         except:
             return False
 
-
-    def update_association_id(self, aid):
+    def update_school_id(self, aid):
         """
-        更新当前协会id
+        更新当前学校id
         :param aid:
         :return:
         """
         aid = str(aid)
-        token = self.request.META.get("HTTP_HOHO_AUTH_TOKEN", "")
-        ttl = self.__redis.ttl(token)
-        if ttl > 0:
-            self.__redis.set(token, aid)
-            self.__redis.expire(token, ttl)
+        school_id_key = "{}@{}".format(self.__school_time, self._account.id)
+        self.__redis.set(school_id_key, aid, self.__school_time)
 
     def create_token(self):
         """
@@ -89,9 +85,9 @@ class HoHoClientAuthorization(HoHoAuthorization):
         msg = base64.b64encode(json.dumps(token_info).encode('utf-8')).decode('utf-8')
         # session信息
         self.__redis.set(token_key, msg)
-        self.__redis.expire(token_key, int(self.__effective_time))
-        # 当前协会id
-        self.__redis.set(token, "")
-        self.__redis.expire(token, int(self.__effective_time))
+        # 当前学校id
+        school_id_key = "{}@{}".format(self.__school_time, self._account.id)
+        if not self.__redis.exists(school_id_key):
+            self.__redis.set(school_id_key, "", self.__school_time)
 
         return token

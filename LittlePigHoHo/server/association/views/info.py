@@ -22,13 +22,14 @@ class AssociationInfoView(HoHoView):
 
     def get(self, request, sid, aid):
         """
-        获取协会列表 or 获取评优版本信息
+        获取协会信息 or 获取评优版本信息
         :param request:
         :param sid:
         :param aid:
         :return:
         """
-        logic = AssociationLogic(self.auth, sid, aid)
+        logic = AssociationLogic(self.auth, sid)
+        logic.association = logic.get_association(aid)
 
         # 获取评优版本信息
         if self.VERSION:
@@ -36,6 +37,7 @@ class AssociationInfoView(HoHoView):
             # 敏感数据权限 部长以上即放行
             # logic.check(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA)
             return Result(data=logic.get_config().version_dict, association_id=self.auth.get_association_id())
+        logic.account = logic.get_association_account(throw=True)
         return Result(data=logic.get_association_info(), association_id=self.auth.get_association_id())
 
     @check_login
@@ -58,7 +60,7 @@ class AssociationInfoView(HoHoView):
         # 创建协会
         name = params.str('name', desc='名称')
         if Association.objects.values('id').filter(school__id=sid, name=name).exists():
-            raise AssociationExcept.name_exists()
+            return Result(status=-1, association_id=self.auth.get_association_id())
 
         config = AssociationConfigureEntity()
         association = Association.objects.create(
@@ -93,7 +95,7 @@ class AssociationInfoView(HoHoView):
             account.permissions = permissions.dumps()
             account.save()
 
-        return Result(id=association.id, association_id=self.auth.get_association_id())
+        return Result(status=1, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, sid, aid):
@@ -194,7 +196,6 @@ class AssociationVerification(HoHoView):
         for association in associations:
             try:
                 logic.association = association
-                logic.account = logic.get_association_account()
                 data.append(logic.get_association_info())
             except:
                 pass

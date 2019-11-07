@@ -11,6 +11,7 @@ from .views import *
 # 协会用户路由
 account_urlpatterns = [
     path('', AssociationAccountInfo.as_view(method=['POST', 'PUT', 'DELETE'])),
+    path('/me', AssociationAccountInfo.as_view(method=['GET'], ME=True)),
     path('/<int:acid>', AssociationAccountInfo.as_view(method=['GET', 'PUT', 'DELETE'])),
     path('/list', AssociationAccountView.as_view(method=['GET'])),
     path('/_mget', AssociationAccountView.as_view(method=['POST'])),
@@ -35,8 +36,8 @@ attendance_urlpatterns = [
     # 签到
     path('/<int:vid>/sign', AttendanceSign.as_view(method=['GET', 'POST'])),
     # 管理
-    path('/<int:vid>/leave', AttendanceManage.as_view(method=['GET'])),
-    path('/<int:vid>/manage', AttendanceManage.as_view(method=['POST'])),
+    path('/<int:vid>/leave', AttendanceManage.as_view(method=['POST'])),
+    path('/<int:vid>/manage', AttendanceManager.as_view(method=['POST'])),
 ]
 
 # 主路由

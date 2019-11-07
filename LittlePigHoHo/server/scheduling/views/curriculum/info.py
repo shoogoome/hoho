@@ -121,7 +121,7 @@ class CurriculumView(HoHoView):
         # logic.check(AssociationPermissionEnum.SCHEDULING)
         _id = str(logic.association.id)
         if redis.exists(_id):
-            data = json.loads(redis.get(_id).decode())
+            data = redis.get_json(_id)
         else:
             curriculums = AssociationAccountCurriculum.objects.filter_cache(curriculum=logic.curriculum, account__retire=False)
             account_ids = AssociationAccount.objects.values('id').filter(association=logic.association, retire=False)
@@ -141,6 +141,6 @@ class CurriculumView(HoHoView):
                             data[index][k].append(nickname)
 
             data['completion'] = account_ids.count() / len(curriculums)
-            redis.set(_id, json.dumps(data))
+            redis.set(_id, data)
 
         return Result(data=data, association_id=self.auth.get_association_id())

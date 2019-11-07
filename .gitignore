@@ -10,3 +10,4 @@ __pycache__
 *.egg-info
 redis
 # !/redis/redis.conf
+config.yml

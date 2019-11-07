@@ -25,3 +25,7 @@ class AccountInfoExcept(HoHoExceptBase):
     @classmethod
     def error(cls):
         return cls("操作失败")
+
+    @classmethod
+    def secret_key_error(cls):
+        return cls("密钥错误")

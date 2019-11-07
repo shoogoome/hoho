@@ -19,3 +19,7 @@ class DepartmentExcept(HoHoExceptBase):
     def short_name_exist(cls):
         return cls("名称缩写已存在")
 
+    @classmethod
+    def no_affiliated_department(cls):
+        return cls("没有归属部门")
+

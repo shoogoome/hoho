@@ -44,6 +44,7 @@ class HoHoAuthorization(Authorization):
         self._is_login = False
         self._account = None
         self._association_id = ""
+        self._school_id = ""
 
     def is_login(self):
         """
@@ -66,6 +67,13 @@ class HoHoAuthorization(Authorization):
         :return:
         """
         self._account = account
+
+    def get_school_id(self):
+        """
+        返回当前学校id
+        :return:
+        """
+        return self._school_id
 
     def get_association_id(self):
         """

@@ -12,6 +12,7 @@ urlpatterns = [
     path('/dashboard', AccountDashboard.as_view(method=['GET'])),
     # 开发登陆接口
     path('/register/this/is/jiekou/useing/to/kaifa', Login.as_view(method=['POST'])),
+    path('/register/zhe/shi/web/guan/li/duan/de/deng/lu/jie/kou', Login.as_view(method=['POST'], WEB=True)),
     path('/update_id', Login.as_view(method=['GET'])),
 ]
 

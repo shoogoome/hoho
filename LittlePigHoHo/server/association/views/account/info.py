@@ -15,17 +15,23 @@ from ...models import AssociationDepartment
 
 class AssociationAccountInfo(HoHoView):
 
+    ME = False
+
     @check_login
-    def get(self, request, sid, aid, acid):
+    def get(self, request, sid, aid, acid=""):
         """
-        获取用户信息(协会)
+        获取用户信息(协会) or 自己
         :param request:
         :param sid:
         :param aid:
         :param acid:
         :return:
         """
-        logic = AssociationAccountLogic(self.auth, sid, aid, acid)
+        if self.ME:
+            logic = AssociationAccountLogic(self.auth, sid, aid)
+            logic.other_account = logic.account
+        else:
+            logic = AssociationAccountLogic(self.auth, sid, aid, acid)
         return Result(data=logic.get_account_info(), association_id=self.auth.get_association_id())
 
     @check_login
@@ -37,28 +43,31 @@ class AssociationAccountInfo(HoHoView):
         :param aid:
         :return:
         """
-        logic = AssociationLogic(self.auth, sid, aid)
+        logic = AssociationLogic(self.auth, sid)
+        logic.association = logic.get_association(aid)
         account = self.auth.get_account()
 
         params = ParamsParser(request.JSON)
         choosing_code = params.str('choosing_code')
         if logic.association.choosing_code != choosing_code:
-            raise AssociationExcept.code_error()
+            _status = -1
+        else:
+            # 判断是否已加入该协会
+            _account = AssociationAccount.objects.filter(
+                association=logic.association,
+                account=account,
+            )
+            if _account.exists():
+                _status = 1
+            else:
+                ata = AssociationAccount.objects.create(
+                    nickname=account.nickname,
+                    association=logic.association,
+                    account=account,
+                )
+                _status = 0
 
-        # 判断是否已加入该协会
-        _account = AssociationAccount.objects.filter(
-            association=logic.association,
-            account=account,
-        )
-        if _account.exists():
-            raise AssociationExcept.joined_association()
-
-        ata = AssociationAccount.objects.create(
-            nickname=account.nickname,
-            association=logic.association,
-            account=account,
-        )
-        return Result(id=ata.id, association_id=self.auth.get_association_id())
+        return Result(status=_status, association_id=self.auth.get_association_id())
 
     @check_login
     def put(self, request, sid, aid, acid=""):

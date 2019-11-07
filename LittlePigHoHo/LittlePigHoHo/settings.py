@@ -58,6 +58,7 @@ DATABASES = {
 #      Redis
 # ##################
 __config_redis = __ho_config.get('redis', {})
+config_redis_cluster = __ho_config.get('redis-cluster', {})
 
 # 主redis数据库
 REDIS_CONFIG_HOST = __config_redis.get('host', '127.0.0.1')

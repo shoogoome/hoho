@@ -10,6 +10,7 @@ from ..logic.notice import NoticeLogic
 from common.core.auth.check_login import check_login
 from ..models import AssociationNotice
 from common.enum.association.permission import AssociationPermissionEnum
+from common.enum.account.role import RoleEnum
 
 class NoticeInfo(HoHoView):
 
@@ -45,10 +46,8 @@ class NoticeInfo(HoHoView):
         start_time = params.float('start_time', desc='开始时间')
         end_time = params.float('end_time', desc='结束时间')
 
-        if params.has('department'):
-            department = params.int('department', desc='部门id')
-            if not AssociationDepartment.objects.filter(association_id=aid, id=department).exists():
-                raise DepartmentExcept.department_not_found()
+        if logic.account.role == int(RoleEnum.DIRECTOR):
+            raise DepartmentExcept.no_permission()
 
         notice = AssociationNotice.objects.create(
             title=title,
@@ -58,8 +57,12 @@ class NoticeInfo(HoHoView):
             author=logic.account,
             association_id=aid,
         )
-        if params.has('department'):
-            notice.department_id = department
+        if logic.account.role == int(RoleEnum.MINISTER):
+            depertment = AssociationDepartment.objects.filter(manager=logic.account)
+            if not depertment.exists():
+                notice.delete()
+                raise DepartmentExcept.no_affiliated_department()
+            notice.department = depertment[0]
             notice.save()
 
         return Result(id=notice.id, association_id=self.auth.get_association_id())
@@ -122,7 +125,7 @@ class NoticeView(HoHoView):
         limit = params.int('limit', desc='每页最大渲染数', require=False, default=10)
         page = params.int('page', desc='当前页数', require=False, default=1)
 
-        notice = AssociationNotice.objects.values('id', 'update_time').filter(association_id=aid)
+        notice = AssociationNotice.objects.values('id', 'update_time').filter(association_id=aid).order_by('-create_time')
         if params.has('key'):
             key = params.str('key', desc='关键字 标题 正文')
             notice = notice.filter(
@@ -139,6 +142,8 @@ class NoticeView(HoHoView):
         if params.has('department'):
             notice = notice.filter(department_id=params.int('department', desc='协会id'))
 
+        notice = list(notice)
+        notice.extend(logic.get_remember())
         @slicer(notice, limit=limit, page=page)
         def get_notice_list(obj):
             return obj
@@ -165,8 +170,56 @@ class NoticeView(HoHoView):
         for notice in notices:
             try:
                 logic.notice = notice
+                if logic.notice.association_id != logic.association.id:
+                    continue
                 data.append(logic.get_notice_info())
             except:
                 pass
 
         return Result(data=data, association_id=self.auth.get_association_id())
+
+class NoticeRememberView(HoHoView):
+
+
+    @check_login
+    def post(self, request, sid, aid):
+        """
+        批量记住通知
+        :param request:
+        :param sid:
+        :param aid:
+        :return:
+        """
+        logic = NoticeLogic(self.auth, sid, aid)
+
+        params = ParamsParser(request.JSON)
+        ids = params.list("ids", desc="通知id列表")
+
+        static = {}
+        notices = AssociationNotice.objects.get_many(ids=ids)
+        for notice in notices:
+
+            logic.notice = notice
+            if logic.notice.association_id != logic.association.id:
+                _static = -1
+            else:
+                _static = 1 if logic.remember() else 0
+            static[str(notice.id)] = _static
+
+        return Result(static=static)
+
+    @check_login
+    def get(self, request, sid, aid, nid):
+        """
+        记住通知
+        :param request:
+        :param sid:
+        :param aid:
+        :param nid:
+        :return:
+        """
+        logic = NoticeLogic(self.auth, sid, aid, nid)
+        _static = logic.remember()
+
+        return Result(static = _static)
+

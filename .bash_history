@@ -232,3 +232,56 @@ python3 manage.py test_data
 pip3 install faker
 pip install faker
 exit
+ls
+cd root
+ls
+cd LittlePigHoHo/
+ls
+python3 manage.py redis-cluster
+exit
+config
+set
+redis
+set
+log
+login
+man
+login --help
+exit
+cd root
+ls
+cd LittlePigHoHo/
+ls
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+exit
+cd root
+cd LittlePigHoHo/
+ls
+python3 manage.py redis-cluster
+python3 manage.py redis-cluster
+exit
+ps
+ls
+cd root
+ls
+cd LittlePigHoHo/
+ls
+python3 manage.py makemigrations
+python3 manage.py migrate
+exit

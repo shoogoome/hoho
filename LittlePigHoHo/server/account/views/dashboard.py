@@ -43,7 +43,7 @@ class AccountDashboard(HoHoView):
             # 获取 协会信息
             association = account.association
             # 构造通知信息
-            notices = association.associationnotice_set.values('title', 'content', 'start_time', 'end_time').filter(end_time__lte=_time)
+            notices = association.associationnotice_set.values('title', 'content', 'author__nickname', 'start_time', 'end_time', 'create_time').filter(end_time__gte=_time)
             data['notices'][association.name] = [notice for notice in notices]
             # 构造任务信息
             tasks = account.associationtaskreport_set.values(
@@ -53,7 +53,7 @@ class AccountDashboard(HoHoView):
                 "title": task.get('task__title', ""),
                 "content": task.get('task__content', ""),
                 "start_time": task.get('task__start_time', ""),
-                "end_time": task.get('task__end_time', "")
+                "end_time": task.get('task__end_time', ""),
             } for task in tasks]
 
         return Result(data=data, association_id=self.auth.get_association_id())

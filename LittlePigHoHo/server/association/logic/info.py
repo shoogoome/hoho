@@ -53,7 +53,7 @@ class AssociationLogic(SchoolLogic):
             raise AssociationExcept.association_not_found()
         return association
 
-    def get_association_account(self):
+    def get_association_account(self, throw=False):
         """
         获取人事表
         :return:
@@ -61,6 +61,7 @@ class AssociationLogic(SchoolLogic):
         account = AssociationAccount.objects.filter_cache(
             account=self.auth.get_account(), association=self.association)
         if account is None or len(account) == 0:
+            if throw: return None
             raise AssociationExcept.no_permission()
         return account[0]
 
@@ -72,8 +73,8 @@ class AssociationLogic(SchoolLogic):
         # 普通用户
         field = self.NORMAL_FIELDS
         # 部长以上权限
-        if self.inspect(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA):
-            field += self.ADVANCED_FIELDS
+        if self.account and self.inspect(AssociationPermissionEnum.ASSOCIATION_VIEW_DATA):
+            field = field + self.ADVANCED_FIELDS
         return model_to_dict(self.association, field)
 
     def filter_account(self):

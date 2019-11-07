@@ -9,6 +9,7 @@ from common.enum.account.sex import SexEnum
 from common.core.dao.cache.factory import delete_model_single_object_cache
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
+from common.core.dao.time_stamp import TimeStampField
 
 
 class Account(models.Model):
@@ -54,8 +55,6 @@ class Account(models.Model):
     motto = models.CharField(max_length=60, default='', blank=True)
 
     # ==== 扩展信息 ====
-
-    from common.core.dao.time_stamp import TimeStampField
 
     # 创建时间
     create_time = TimeStampField(auto_now_add=True)

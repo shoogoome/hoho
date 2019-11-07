@@ -144,7 +144,7 @@ class AssociationAccount(models.Model):
     objects = HoHoModelManager()
 
     def __str__(self):
-        return "[%d] %s %s" % (self.id, self.role, self.nickname)
+        return "[%d]\t%s\t%s\t%s" % (self.id, self.role, self.nickname, self.association.name)
 
 
 class AssociationAttendance(models.Model):
@@ -161,6 +161,9 @@ class AssociationAttendance(models.Model):
 
     # 归属协会
     association = models.ForeignKey('association.Association', on_delete=models.CASCADE)
+
+    # 归属部门
+    department = models.ForeignKey('association.AssociationDepartment', on_delete=models.CASCADE, null=True, blank=True)
 
     # 描述
     description = models.TextField(default="", blank=True)

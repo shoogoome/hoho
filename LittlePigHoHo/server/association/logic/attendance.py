@@ -24,7 +24,7 @@ class AttendanceLogic(AssociationLogic):
     EARTH_REDIUS = 6378.137
 
     NOMAL_FILE = [
-        'title', 'author', 'author__id', 'author__nickname', 'description',
+        'title', 'author', 'author__id', 'author__nickname', 'description', 'id',
         'start_time', 'end_time', 'distance', 'place_y', 'place_x',
     ]
 
@@ -45,8 +45,8 @@ class AttendanceLogic(AssociationLogic):
 
         self.redis = None
         self.name = self.association.id
-        self.department_id = self.account.department_id if self.association.colony else '-1'
-
+        # self.department_id = self.account.department_id if self.association.colony else '-1'
+        self.department_id = self.account.department_id if self.account.department is not None else '-1'
 
     def get_attendance(self, atid):
         """
@@ -94,6 +94,7 @@ class AttendanceLogic(AssociationLogic):
             self.redis = AttendanceRedisFactory()
         account_id = leave[1] if leave[0] else self.account.id
 
+
         # 签到判断距离
         if not leave:
             # 超过容错距离
@@ -101,7 +102,7 @@ class AttendanceLogic(AssociationLogic):
                 raise AttendanceExcept.no_in_place()
 
         self.redis.hset(
-            self._build_key(self.attendance.id, self.department_id),
+            self.build_key(self.attendance.id, self.department_id),
             account_id,
             0 if leave[0] else 1
         )
@@ -119,18 +120,18 @@ class AttendanceLogic(AssociationLogic):
 
         if account_id == "" or account_id is None:
             status = self.redis.hget(
-                self._build_key(self.attendance.id, self.department_id),
+                self.build_key(self.attendance.id, self.department_id),
                 self.account.id
             )
         else:
             status = self.redis.hget(
-                self._build_key(self.attendance.id, department_id),
+                self.build_key(self.attendance.id, department_id),
                 account_id
             )
         return status
 
 
-    def get_department_sign_info(self, department_id, ass=False):
+    def get_department_sign_info(self, department_id):
         """
         获取部门签到情况
         :param department_id:
@@ -139,34 +140,46 @@ class AttendanceLogic(AssociationLogic):
         if self.redis is None:
             self.redis = AttendanceRedisFactory()
 
-        status = {}
-        if not ass:
-            status = {str(aid['id']): -1 for aid in AssociationAccount.objects.values('id').filter(association=self.association, retire=False, department_id=department_id)}
+        data = []
+        accounts = AssociationAccount.objects.values('id', 'nickname').filter(association=self.association, retire=False, department_id=department_id) if department_id != '-1' else \
+            AssociationAccount.objects.values('id', 'nickname').filter(association=self.association, retire=False, department__isnull=True)
+        status = {str(_account['id']): {
+            "id": str(_account['id']),
+            "nickname": str(_account["nickname"]),
+            "status": -1
+        } for _account in accounts}
         _status = self.redis.hgetall(
-                self._build_key(self.attendance.id, department_id)
+                self.build_key(self.attendance.id, department_id)
             )
-        for k, v in _status.items():
-            status[k.decode()] = v.decode()
-
-        return status
-
+        for account in accounts:
+            if str(account['id']) in _status:
+                status[str(account['id'])]["status"] = _status[str(account['id'])]
+            data.append(status[str(account['id'])])
+        return data
 
     def get_association_sign_info(self):
         """
         获取协会签到情况
         :return:
         """
-        if not self.association.colony:
-            return self.get_department_sign_info('-1')
+        # if not self.association.colony:
+        #     return self.get_department_sign_info('-1')
 
         # 获取全部部门
-        department_id = AssociationDepartment.objects.values('id').filter(association=self.association)
+        departments = AssociationDepartment.objects.values('id', 'name').filter(association=self.association)
+        departments = list(departments)
+        departments.append({
+            "id": "-1",
+            "name": "默认"
+        })
 
-        account = AssociationAccount.objects.values('id').filter(association=self.association, retire=False)
-        status = {}
-        for did in department_id:
-            status[str(did)] = {str(aid['id']): -1 for aid in account.filter(department_id=did)}
-            status[str(did)].update(self.get_department_sign_info(str(did), ass=True))
+        status = []
+        for department in departments:
+            status.append({
+                "id": department['id'],
+                "name": department['name'],
+                "data": self.get_department_sign_info(department['id'])
+            })
 
         return status
 
@@ -195,29 +208,29 @@ class AttendanceLogic(AssociationLogic):
             if self.association.colony:
                 # 遍历部门
                 for department_id in department_ids:
-                    _status = self.redis.hgetall(self._build_key(attendance_id['id'], department_id))
+                    _status = self.redis.hgetall(self.build_key(attendance_id['id'], department_id))
                     # 写入计数
                     for account_id in account_ids.filter(department_id=department_id):
                         account_id = account_id['id']
                         if str(account_id) in status:
-                            status[str(account_id)][int(_status.get(str(account_id).encode(), b'-1').decode())] += 1
+                            status[str(account_id)][int(_status.get(str(account_id), '-1').decode())] += 1
                         else:
                             status[str(account_id)] = [0, 0, 0]
-                            status[str(account_id)][int(_status.get(str(account_id).encode(), b'-1').decode())] = 1
+                            status[str(account_id)][int(_status.get(str(account_id), '-1').decode())] = 1
             else:
-                _status = self.redis.hgetall(self._build_key(attendance_id['id'], '-1'))
+                _status = self.redis.hgetall(self.build_key(attendance_id['id'], '-1'))
                 # 写入计数
                 for account_id in account_ids:
                     account_id = account_id['id']
                     if str(account_id) in status:
-                        status[str(account_id)][int(_status.get(str(account_id).encode(), b'-1').decode())] += 1
+                        status[str(account_id)][int(_status.get(str(account_id), '-1'))] += 1
                     else:
                         status[str(account_id)] = [0, 0, 0]
-                        status[str(account_id)][int(_status.get(str(account_id).encode(), b'-1').decode())] = 1
+                        status[str(account_id)][int(_status.get(str(account_id), '-1'))] = 1
 
         return status
 
-    def _build_key(self, *args):
+    def build_key(self, *args):
         """
         构建key
         :param key:

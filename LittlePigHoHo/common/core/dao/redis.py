@@ -2,8 +2,38 @@
 # coding:utf-8
 import redis
 from django.conf import settings
+from rediscluster import StrictRedisCluster
+from LittlePigHoHo.settings import config_redis_cluster
+import json
+import threading
 
 redis_pool = {}
+
+redis_cluster_pool = []
+# 获取redis集群配置
+db_configs = [v for _, v in config_redis_cluster.items()]
+
+
+class RedisClusterConnection(object):
+    """redis集群连接单例模式"""
+
+    def __init__(self):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return StrictRedisCluster(startup_nodes=db_configs, decode_responses=True, password=settings.REDIS_CONFIG_PASSWORD)
+        # return StrictRedisCluster(startup_nodes=db_configs, decode_responses=True)
+    def __new__(cls, *args, **kwargs):
+        _instance_lock = threading.Lock()
+
+        if not hasattr(RedisClusterConnection, '_instance'):
+            with _instance_lock:
+                if not hasattr(RedisClusterConnection, '_instance'):
+                    RedisClusterConnection._instance = object.__new__(cls)
+
+        return RedisClusterConnection._instance
+
+
 
 def get_redis_conn(db=1):
     """
@@ -22,35 +52,58 @@ def get_redis_conn(db=1):
     return redis.StrictRedis(connection_pool=redis_pool[db])
 
 
-class RedisFactory(object):
+class RedisClusterFactory(object):
 
-
-    def __init__(self, name="default", db=1, expire=86400):
+    def __init__(self, name="default", expire=86400):
         """
-        缓存工厂
-        :param name: 默认缓存key域
-        :param db: redis数据库编号
+        redis集群缓存工厂
+        :param name: 前缀名
+        :param expire: 过期时间
         """
         self.name = name
-        self.redis = get_redis_conn(db)
-        self.expire=expire
+        self.redis_cluster = RedisClusterConnection()()
+        self.expire = expire
 
-    def set(self, name, value):
+    def set_json(self, name, value):
         """
-        set方法
+        添加json缓存
         :param name:
         :param value:
         :return:
         """
-        self.redis.set(self._build_name(name), value, ex=self.expire)
+        _name = self._build_name(name)
+        _value = json.dumps(value)
+        self.redis_cluster.set(_name, _value)
+        self.redis_cluster.expire(_name, self.expire)
 
-    def get(self, name):
+    def get_json(self, name):
         """
-        get方法
+        获取json缓存
         :param name:
         :return:
         """
-        return self.redis.get(self._build_name(name))
+        value = self.redis_cluster.get(self._build_name(name))
+        return json.loads(value)
+
+    def get(self, name):
+        """
+        获取缓存
+        :param name:
+        :return:
+        """
+        return self.redis_cluster.get(self._build_name(name))
+
+    def set(self, name, value, time=None):
+        """
+        添加缓存
+        :param name:
+        :param value:
+        :param time:
+        :return:
+        """
+        _name = self._build_name(name)
+        self.redis_cluster.set(_name, value)
+        self.redis_cluster.expire(_name, self.expire if not time else time)
 
     def hgetall(self, name):
         """
@@ -58,7 +111,7 @@ class RedisFactory(object):
         :param name:
         :return:
         """
-        return self.redis.hgetall(self._build_name(name))
+        return self.redis_cluster.hgetall(self._build_name(name))
 
     def hget(self, name, key):
         """
@@ -67,7 +120,7 @@ class RedisFactory(object):
         :param key:
         :return:
         """
-        return self.redis.hget(self._build_name(), key)
+        return self.redis_cluster.hget(self._build_name(name), key)
 
     def hmset(self, name, data):
         """
@@ -76,8 +129,8 @@ class RedisFactory(object):
         :param data:
         :return:
         """
-        self.redis.hmset(self._build_name(name), data)
-        self.redis.expire(self._build_name(name), self.expire)
+        self.redis_cluster.hmset(self._build_name(name), data)
+        self.redis_cluster.expire(self._build_name(name), self.expire)
 
     def hset(self, name, key, value):
         """
@@ -87,29 +140,8 @@ class RedisFactory(object):
         :param value:
         :return:
         """
-        self.redis.hset(self._build_name(name), key, value)
-        self.redis.expire(self._build_name(name), self.expire)
-
-    def lpushs(self, name, data):
-        """
-        数组批量缓存
-        :param name:
-        :param data:
-        :param expire:
-        :return:
-        """
-        name = self._build_name(name)
-        [(self.redis.rpush(name, i.encode()), self.redis.expire(name, self.expire)) for i in data]
-
-    def lrange(self, name):
-        """
-        获取全数组
-        :param name:
-        :return:
-        """
-        data = self.redis.lrange(self._build_name(name), 0, -1)
-        return [i.decode() for i in data]
-
+        self.redis_cluster.hset(self._build_name(name), key, value)
+        self.redis_cluster.expire(self._build_name(name), self.expire)
 
     def exists(self, name):
         """
@@ -117,15 +149,15 @@ class RedisFactory(object):
         :param name:
         :return:
         """
-        return self.redis.exists(self._build_name(name))
+        return self.redis_cluster.exists(self._build_name(name))
 
     def ttl(self, name):
         """
-        返回国企过期时间
+        返回过期时间
         :param name:
         :return:
         """
-        return self.redis.ttl(self._build_name(name))
+        return self.redis_cluster.ttl(self._build_name(name))
 
     def delete(self, name):
         """
@@ -133,13 +165,29 @@ class RedisFactory(object):
         :param name:
         :return:
         """
-        self.redis.delete(self._build_name(name))
+        self.redis_cluster.delete(self._build_name(name))
 
-    def _build_name(self, *key):
+    def expired(self, name, time):
         """
-        构建 redis name
-        :param key:
+        设置过期时间
+        :param name:
+        :param time:
         :return:
         """
-        return ':'.join([self.name, *key])
+        self.redis_cluster.expire(self._build_name(name), time)
 
+    def keys(self, name: str):
+        """
+        匹配keys
+        :param name:
+        :return:
+        """
+        return self.redis_cluster.keys(name if name[-1] == "*" else name + "*")
+
+    def _build_name(self, *name):
+        """
+        构建key
+        :param name:
+        :return:
+        """
+        return ":".join([self.name, *[str(i) for i in name]])

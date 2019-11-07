@@ -1,11 +1,9 @@
-from common.core.dao.redis import RedisFactory
+from common.core.dao.redis import RedisClusterFactory
 
 
-class SchedulingRedis(RedisFactory):
+
+class SchedulingRedis(RedisClusterFactory):
 
     def __init__(self):
         """排班缓存   1月"""
-        super(SchedulingRedis, self).__init__("scheduling", 5, expire=2592000)
-
-
-
+        super(SchedulingRedis, self).__init__("scheduling", expire=2592000)

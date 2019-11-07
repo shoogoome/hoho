@@ -16,10 +16,6 @@ services:
       - ./mysql:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=littlepighoho17**
-    deploy:
-      placement:
-        constraints:
-          - node.labels.id == 1
 
   pma:
     image: phpmyadmin/phpmyadmin:latest
@@ -31,10 +27,6 @@ services:
       - "5840:80"
     depends_on:
       - mariadb
-    deploy:
-      placement:
-        constraints:
-          - node.labels.id == 2
 
   redis:
     image: hoho-redis
@@ -60,7 +52,7 @@ services:
     image: hoho-server
     restart: always
     networks:
-      redis_redis-net:
+      # redis_redis-net:
       server-net:
       web-net:
         aliases:
@@ -70,13 +62,9 @@ services:
       - redis
     volumes: 
       - .:/root
-    deploy:
-      placement:
-        constraints:
-          - node.labels.grade == 2
 
   web:
-    image: hoho-web
+    image: nginx:1.13
     networks:
       - web-net
     depends_on: 
@@ -85,9 +73,8 @@ services:
     ports: 
       - "80:80"
       - "443:443"
-    deploy:
-      mode: replicated
-      replicas: 3
+    volumes: 
+      - ./nginx-dev:/etc/nginx/conf.d
 
   swarm:
     image: dockersamples/visualizer:stable
@@ -96,17 +83,13 @@ services:
     stop_grace_period: 1m30s
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
 
 networks:
   web-net:
   db-net:
   server-net:
-  redis_redis-net:
-    external: true
+  # redis_redis-net:
+  #   external: true
 # volumes:
 #   mysql-db:
 #     driver: local

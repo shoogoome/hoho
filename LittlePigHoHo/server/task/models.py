@@ -38,6 +38,9 @@ class AssociationTask(models.Model):
     # 是否正在进行
     working = models.BooleanField(default=False)
 
+    # 执行人数
+    number = models.IntegerField(default=1)
+
     # 创建时间
     create_time = TimeStampField(auto_now_add=True)
 

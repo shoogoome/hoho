@@ -8,4 +8,6 @@ urlpatterns = [
     path('/<int:nid>', NoticeInfo.as_view(method=['GET', 'PUT', 'DELETE'])),
     path('/list', NoticeView.as_view(method=['GET'])),
     path('/_mget', NoticeView.as_view(method=['POST'])),
+    path('/remember', NoticeRememberView.as_view(method=['POST'])),
+    path('/<int:nid>/remember', NoticeRememberView.as_view(method=['GET'])),
 ]
